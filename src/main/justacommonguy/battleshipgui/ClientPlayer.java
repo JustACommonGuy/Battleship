@@ -1,9 +1,13 @@
-package justacommonguy;
+package justacommonguy.battleshipgui;
 
 import java.net.Socket;
 
 public class ClientPlayer extends Player{
 	private Socket socket;
+
+	public ClientPlayer(String name) {
+		super(name);
+	}
 
 	public void joinGame(String ipAddress, String port) {
 		//TODO 

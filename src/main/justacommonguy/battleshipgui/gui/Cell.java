@@ -1,4 +1,4 @@
-package justacommonguy.gui;
+package justacommonguy.battleshipgui.gui;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
@@ -6,20 +6,16 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JPanel;
 
-import justacommonguy.ShipLocation;
+import justacommonguy.battleshipgui.ShipLocation;
 
-public class Cell extends JPanel implements MouseListener, HighlightListener {
+public abstract class Cell extends JPanel implements MouseListener, HighlightListener {
 
 	private ShipLocation cell;
 
+	private final static Color DEFAULT = new Color (35, 40, 48);
 	private Color oldColor = DEFAULT;
 	private HighlightInitiator xInitiator;
 	private HighlightInitiator yInitiator;
-
-	private static Color DEFAULT = new Color (35, 40, 48);
-	private static Color FULL = new Color(173, 173, 173);
-	private static Color HIT = new Color(200, 100, 30);
-	private static Color KILL = new Color(150, 30, 30);
 
 	public Cell(ShipLocation cell, HighlightInitiator xInitiator, HighlightInitiator yInitiator) {
 		super.addMouseListener(this);
@@ -30,10 +26,8 @@ public class Cell extends JPanel implements MouseListener, HighlightListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {}
-
 	@Override
 	public void mousePressed(MouseEvent e) {}
-
 	@Override
 	public void mouseReleased(MouseEvent e) {}
 
@@ -71,5 +65,9 @@ public class Cell extends JPanel implements MouseListener, HighlightListener {
 
 	public ShipLocation getCell() {
 		return cell;
+	}
+
+	public void setOldColor(Color oldColor) {
+		this.oldColor = oldColor;
 	}
 }

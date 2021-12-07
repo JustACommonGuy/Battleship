@@ -1,4 +1,4 @@
-package justacommonguy;
+package justacommonguy.battleshipgui;
 
 public enum Result {
 	HIT,

@@ -1,24 +1,28 @@
-package justacommonguy.gui;
-
-import com.formdev.flatlaf.intellijthemes.FlatSpacegrayIJTheme;
+package justacommonguy.battleshipgui.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
-import justacommonguy.ShipLocation;
+import justacommonguy.battleshipgui.ClientPlayer;
+import justacommonguy.battleshipgui.GameServer;
+import justacommonguy.battleshipgui.Player;
+import justacommonguy.battleshipgui.ShipLocation;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
@@ -29,7 +33,9 @@ public class BattleshipGUI implements GUI{
 		ENEMY
 	}
 
-	//Whatever the height or the width are, they need to be one more for the letters and numbers.
+	private Player opponent;
+
+	//The height and the width need to have an extra column or row for the letters and numbers.
 	private static final int HEIGHT = 11;
 	private static final int WIDTH = 11;
 
@@ -42,35 +48,67 @@ public class BattleshipGUI implements GUI{
 	private static final Dimension PANEL_SIZE = 
 			new Dimension(((int) Y_RESOLUTION / 3), (int) (Y_RESOLUTION / 3));
 
+	private JFrame frame = new JFrame();;
 	private JPanel playerMap;
 	private JPanel enemyMap;
+	private JLabel enemyGridLabel;
 	private ArrayList<Cell> playerCells = new ArrayList<Cell>();
 	private ArrayList<Cell> enemyCells = new ArrayList<Cell>();
-
-	public static void main(String[] args) {
-		try {
-			UIManager.setLookAndFeel(new FlatSpacegrayIJTheme());
-		}
-		catch (Exception ex) {
-			System.out.println("Failed to set LaF");
-		}
-		new BattleshipGUI().start(JFrame.EXIT_ON_CLOSE);;
+	
+	public BattleshipGUI() {
+		//TODO
 	}
 
 	@Override
 	public void start(int closeOperation) {
-		/* Size of elements is based on resolution. Might blow up in displays that are not 16:9. */
-		JFrame frame = new JFrame();
+		/* Size of the elements is based on resolution. 
+		GUI might blow up in displays that do not have 16:9 resolutions. */
 		SwingUtils.setUpJFrame(frame, (int) ((0.75) * X_RESOLUTION), (int) ((0.75) * Y_RESOLUTION));
 
-		JPanel playArea = new JPanel();
+		GridBagConstraints gbc = new GridBagConstraints();
+		Insets insets = new Insets(3, 3, 3, 3);
+		JPanel playArea = new JPanel(new GridBagLayout());
+		Font bold = new Font(Font.SANS_SERIF, Font.BOLD, 20);
+
 		enemyMap = makeMap(enemyCells, Faction.ENEMY);
 		playerMap = makeMap(playerCells, Faction.ALLY);
-		playArea.add(playerMap);
-		playArea.add(enemyMap);
+		JLabel gridLabel = new JLabel("YOUR GRID");
+		enemyGridLabel = new JLabel("OPPONENT'S GRID");
+		gridLabel.setFont(bold);
+		enemyGridLabel.setFont(bold);
 
-		frame.add(playArea, BorderLayout.EAST);
+		SwingUtils.setGridBagConstraintsValues(gbc, 0, 0, 0, 0, insets);
+		playArea.add(gridLabel, gbc);
+		SwingUtils.setGridBagConstraintsValues(gbc, 1, 0, 0, 0, insets);
+		playArea.add(enemyGridLabel, gbc);
+		SwingUtils.setGridBagConstraintsValues(gbc, 0, 1, 0, 0, insets);
+		playArea.add(playerMap, gbc);
+		SwingUtils.setGridBagConstraintsValues(gbc, 1, 1, 0, 0, insets);
+		playArea.add(enemyMap, gbc);
+		JPanel eastPanel = new JPanel();
+		eastPanel.add(playArea);
+
+		frame.add(eastPanel, BorderLayout.EAST);
+		/* For reasons that humanity will never understand, 
+		the dumb frame needs to be brought to the front when a popup appears. */
 		SwingUtils.frameToFront(frame);
+	}
+
+	public String askName() {
+		JOptionPane popup = new JOptionPane("Please input your username.", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION);
+		popup.setWantsInput(true);
+		JDialog dialog = popup.createDialog(frame, "Welcome");
+
+		popup.selectInitialValue();
+        dialog.setVisible(true);
+        dialog.dispose();
+		
+		return (String) popup.getInputValue();
+	}
+
+	public void startGame(Player opponent) {
+		this.opponent = opponent;
+		enemyGridLabel.setText(opponent.getName() + "'S GRID");
 	}
 
 	private JPanel makeMap(ArrayList<Cell> cellList, Faction faction) {

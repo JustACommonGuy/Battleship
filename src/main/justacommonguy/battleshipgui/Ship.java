@@ -1,4 +1,4 @@
-package justacommonguy;
+package justacommonguy.battleshipgui;
 
 import java.util.ArrayList;
 

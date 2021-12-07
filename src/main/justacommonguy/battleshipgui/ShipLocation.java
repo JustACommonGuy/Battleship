@@ -1,4 +1,4 @@
-package justacommonguy;
+package justacommonguy.battleshipgui;
 
 public class ShipLocation {
 	private int x;
