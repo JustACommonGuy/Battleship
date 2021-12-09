@@ -4,6 +4,8 @@ import com.formdev.flatlaf.intellijthemes.FlatSpacegrayIJTheme;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -17,10 +19,11 @@ public class GameServer {
 	public static Settings settings = new Settings(new File("settings.properties"));
 	public static GameServer server;
 	public static BattleshipGUI gui;
+	//TODO. Would the streams work if we don't keep a reference to the socket?
 	private Socket clientSocket;
+	private ObjectInputStream clientInput;
+	private ObjectOutputStream clientOutput;
 	private String winner;
-	private ServerSocket socket;
-	private ClientPlayer host;
 
 	public static void main(String[] args) {
 		try {
@@ -35,24 +38,21 @@ public class GameServer {
 	}
 
 	public void start(String[] args) {
-		gui = new BattleshipGUI();
-		gui.start(JFrame.EXIT_ON_CLOSE);
-
-		if ((args.length == 0) && (settings.getSetting("username").equals(""))) {
-			String newName = gui.askName().toUpperCase();
-			host = new ClientPlayer(newName);
-			settings.setSetting("username", newName);
-			settings.saveSettings();
+		String hostUsername = null;
+		if (args.length != 0) {
+			hostUsername = args[0];
 		}
+		gui = new BattleshipGUI(hostUsername);
+		gui.start(JFrame.EXIT_ON_CLOSE);
 	}
 
-	private void setUpNetWorking() {
+	public void hostGame() {
 		try {
 			ServerSocket serverSocket = new ServerSocket(Integer.parseInt(settings.getSetting("server_port")));
 			clientSocket = serverSocket.accept();
-			/* TODO Make an enumeration for different orders and make sockets 
-			wait or send them. This way, only a few (maybe one?) methods related to 
-			networking will be required. */
+			clientInput = new ObjectInputStream(clientSocket.getInputStream());
+			clientOutput = new ObjectOutputStream(clientSocket.getOutputStream());
+			System.out.println("Connection started.");
 		}
 		catch (NumberFormatException | IOException e) {
 			e.printStackTrace();
@@ -62,20 +62,8 @@ public class GameServer {
 	private void play() {
 
 	}
-
-	private void makeMove(ShipLocation cell) {
-
-	}
-
-	public void finish() {
-
-	}
-
-	public void hostGame() {
-		setUpNetWorking();
-	}
-
-	private void changeCells(Result result) {
+	
+	private void unlockPlacing(String player) {
 
 	}
 
@@ -83,7 +71,11 @@ public class GameServer {
 
 	}
 
-	private void unlockPlacing(String player) {
+	private void updateLocations(Result result) {
+
+	}
+
+	public void finish() {
 
 	}
 }

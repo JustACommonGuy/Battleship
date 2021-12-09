@@ -9,10 +9,6 @@ public class ClientPlayer extends Player{
 		super(name);
 	}
 
-	public void joinGame(String ipAddress, String port) {
-		//TODO 
-	}
-
 	@Override
 	public void setUpShips() {
 		// TODO Auto-generated method stub

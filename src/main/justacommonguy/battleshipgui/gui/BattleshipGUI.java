@@ -23,17 +23,20 @@ import justacommonguy.battleshipgui.ClientPlayer;
 import justacommonguy.battleshipgui.GameServer;
 import justacommonguy.battleshipgui.Player;
 import justacommonguy.battleshipgui.ShipLocation;
+import justacommonguy.battleshipgui.networking.NetworkComponent;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
-public class BattleshipGUI implements GUI{
+public class BattleshipGUI implements GUI, NetworkComponent {
 
 	private enum Faction {
 		ALLY,
 		ENEMY
 	}
 
+	private ClientPlayer host;
 	private Player opponent;
+	private String ipAddress = "127.0.0.1";
 
 	//The height and the width need to have an extra column or row for the letters and numbers.
 	private static final int HEIGHT = 11;
@@ -55,12 +58,23 @@ public class BattleshipGUI implements GUI{
 	private ArrayList<Cell> playerCells = new ArrayList<Cell>();
 	private ArrayList<Cell> enemyCells = new ArrayList<Cell>();
 	
-	public BattleshipGUI() {
+
+	public BattleshipGUI(String hostUsername) {
 		//TODO
+
+		if ((hostUsername == null) && (GameServer.settings.getSetting("username").equals(""))) {
+			hostUsername = askName().toUpperCase();
+			GameServer.settings.setSetting("username", hostUsername);
+			GameServer.settings.saveSettings();
+		}
+		host = new ClientPlayer(hostUsername);
+		
 	}
 
 	@Override
 	public void start(int closeOperation) {
+		//TODO. Maybe disable close button so the player will quit appropiately.
+		//https://www.coderanch.com/t/344419/java/deactivate-close-minimise-resizable-window
 		/* Size of the elements is based on resolution. 
 		GUI might blow up in displays that do not have 16:9 resolutions. */
 		SwingUtils.setUpJFrame(frame, (int) ((0.75) * X_RESOLUTION), (int) ((0.75) * Y_RESOLUTION));
@@ -104,11 +118,6 @@ public class BattleshipGUI implements GUI{
         dialog.dispose();
 		
 		return (String) popup.getInputValue();
-	}
-
-	public void startGame(Player opponent) {
-		this.opponent = opponent;
-		enemyGridLabel.setText(opponent.getName() + "'S GRID");
 	}
 
 	private JPanel makeMap(ArrayList<Cell> cellList, Faction faction) {
@@ -189,5 +198,35 @@ public class BattleshipGUI implements GUI{
 		}
 
 		return map;
+	}
+
+	public void joinGame(String ipAddress, int port) {
+		//TODO Add a socket to connect to the server.
+	}
+	
+	@Override
+	public Object respondRequest() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void startGame(Player opponent) {
+		this.opponent = opponent;
+		enemyGridLabel.setText(opponent.getName() + "'S GRID");
+	}
+
+	/** Client only. */
+	public ClientPlayer getPlayerInfo() {
+		//TODO.
+		return null;
+	}
+
+	public ArrayList<ShipLocation> getLocations() {
+		//TODO.
+		return null;
+	}
+	public ShipLocation getAttack() {
+		//TODO.
+		return null;
 	}
 }
