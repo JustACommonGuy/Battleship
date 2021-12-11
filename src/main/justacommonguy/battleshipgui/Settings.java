@@ -15,21 +15,9 @@ public class Settings {
 	Properties properties = new Properties();
 	private static File file;
 
-
-	/* private static String username;
-	private static String server_port;
-
-	private static String enemy_miss_color;
-	private static String enemy_ship_color;
-	private static String enemy_hit_color;
-	private static String enemy_kill_color;
-	private static String ally_miss_color;
-	private static String ally_ship_color;
-	private static String ally_hit_color;
-	private static String ally_kill_color; */
-
-
 	private static String SERVER_PORT = "1337";
+	private static String IP_ADDRESS = "";
+	private static String CONNECTION_PORT = "";
 	private static String MISS = "0,0,0";
 	private static String SHIP = "173,173,173";
 	private static String HIT = "200,100,30";
@@ -55,6 +43,8 @@ public class Settings {
 
 		properties.setProperty("username", "");
 		properties.setProperty("server_port", SERVER_PORT);
+		properties.setProperty("default_ip_address", IP_ADDRESS);
+		properties.setProperty("default_port", CONNECTION_PORT);
 		
 		properties.setProperty("enemy_miss_color", MISS);
 		properties.setProperty("enemy_ship_color", SHIP);
