@@ -1,6 +1,8 @@
 package justacommonguy.battleshipgui;
 
-public class ShipLocation {
+import java.io.Serializable;
+
+public class ShipLocation implements Serializable {
 	private int x;
 	private int y;
 	private int[] coords = new int[2];

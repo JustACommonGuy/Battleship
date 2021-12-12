@@ -18,7 +18,8 @@ import justacommonguy.battleshipgui.gui.BattleshipGUI;
 import justacommonguy.battleshipgui.networking.NetworkComponent;
 import justacommonguy.battleshipgui.networking.Request;
 // TODO. Should send a message to the client if the game fails.
-// TODO. Implement the catch blocks for better handling. 
+// TODO. Implement the catch blocks for better handling.
+// ? Add WAN connection. https://res.infoq.com/articles/Java-7-Sockets-Direct-Protocol/en/resources/Fig2large.jpg
 public class GameServer implements Runnable, NetworkComponent {
 
 	public static Settings settings = new Settings(new File("settings.properties"));
@@ -55,20 +56,25 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	public void hostGame() {
-		try {
-			ServerSocket serverSocket = new ServerSocket(
-					Integer.parseInt(settings.getSetting("server_port")));
+		try (ServerSocket serverSocket = new ServerSocket(
+				Integer.parseInt(settings.getSetting("server_port")))) {
 			System.out.println("Waiting for connection.");
-			Socket clientSocket = serverSocket.accept();
-
-			ois = new ObjectInputStream(clientSocket.getInputStream());
+			Socket clientSocket = null;
+			clientSocket = serverSocket.accept();
+			
+			// *Output streams need to be constructed before the input streams.
+			// *https://stackoverflow.com/a/32940236
+			// *I've just spent two hours debugging this. The only I had to do was to switch these.
 			oos = new ObjectOutputStream(clientSocket.getOutputStream());
+			ois = new ObjectInputStream(clientSocket.getInputStream());
 			System.out.println("Connection started.");
 
 			startGame();
 		}
 		catch (NumberFormatException | IOException e) {
 			System.out.println("Could not host game.");
+			ois = null;
+			oos = null;
 		}
 	}
 
@@ -85,13 +91,17 @@ public class GameServer implements Runnable, NetworkComponent {
 
 	private void startGame() {
 		try {
-			oos.writeObject(Request.SEND_PLAYER_INFO);
+			oos.writeObject(Request.SEND_PLAYER);
+			System.out.println("Requested client to send player info.");
 			client = (Player) ois.readObject();
+			System.out.println("Received client's player info.");
 			gui.startGame(client);
 
 			oos.writeObject(Request.START);
-			host = gui.getPlayerInfo();
+			System.out.println("Requested client to start game.");
+			host = gui.getPlayer();
 			oos.writeObject(host);
+			System.out.println("Sent host info to client.");
 		}
 		catch (IOException | ClassNotFoundException e) {
 			System.out.println("Failed to start the game.");

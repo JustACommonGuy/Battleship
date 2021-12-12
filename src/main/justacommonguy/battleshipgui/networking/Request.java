@@ -1,7 +1,7 @@
 package justacommonguy.battleshipgui.networking;
 
 public enum Request {
-	SEND_PLAYER_INFO,
+	SEND_PLAYER,
 	START,
 	PLACE_SHIPS,
 	ATTACK,

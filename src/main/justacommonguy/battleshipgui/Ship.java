@@ -9,11 +9,11 @@ public class Ship {
 		//TODO 
 	}
 
-	public Result checkHit(ShipLocation attackedCell) {
+	public Result checkHit(ShipLocation attackedLocation) {
 		Result result = Result.MISS;
 
 		for (ShipLocation cell : cells) {
-			if (cell.equals(attackedCell)) {
+			if (cell.equals(attackedLocation)) {
 				result = Result.HIT;
 				cells.remove(cell);
 				break;
