@@ -1,5 +1,8 @@
 # BattleshipGUI
-A basic Battleship game written in Java.
+A basic Battleship game written in Java.  
+This game requires SwingUtils.  
+
+This project uses FormDev Software's [FlatLaf](https://www.formdev.com/flatlaf/).  
 
 <!-- ## Planned features
 - LAN Multiplayer
