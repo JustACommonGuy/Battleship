@@ -1,4 +1,4 @@
-# BattleshipGUI
+# Battleship
 A basic Battleship game written in Java.  
 This game requires SwingUtils.  
 

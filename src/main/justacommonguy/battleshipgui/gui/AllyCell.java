@@ -24,7 +24,7 @@ public class AllyCell extends Cell{
 		if (!placementAllowed) {
 			return;
 		}
-		//TODO Save it to old_color
+		//TODO Change ship orientation
 		setBackground(new Color(255, 255, 255));
 	}
 	

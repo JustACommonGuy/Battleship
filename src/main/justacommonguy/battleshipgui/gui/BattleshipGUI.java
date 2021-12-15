@@ -188,18 +188,15 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		char rowLetter = 'A';
 		int columnNumber = 1;
 		for (int i = 0; i < HEIGHT*WIDTH; i++) {
-			
 			if ((cellX == 0) && (cellY == 0)) {
 				JLabel emptyLabel = new JLabel("", SwingConstants.CENTER);
 				map.add(emptyLabel);
 			}
-			
 			else if ((cellX <= WIDTH) && (cellY == 0)) {
 				JLabel letterLabel = new JLabel(String.valueOf(rowLetter), SwingConstants.CENTER);
 				map.add(letterLabel);
 				rowLetter++;
 			}
-			
 			else if (cellX == 0) {
 				JLabel numberLabel = new JLabel(String.valueOf(columnNumber), SwingConstants.CENTER);
 				map.add(numberLabel);
@@ -223,7 +220,6 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 					default:
 						break;
 				}
-
 				xHighlightInitiators[cellX].addHighlightListener(cell);
 				yHighlightInitiators[cellY].addHighlightListener(cell);
 
@@ -232,7 +228,6 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 			}
 			
 			cellX++;
-			
 			if (cellX >= WIDTH) {
 				cellX = 0;
 				cellY++;
@@ -256,8 +251,8 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			Thread jointThread = new Thread(this);
-			jointThread.start();
+			Thread joinThread = new Thread(this);
+			joinThread.start();
 		}
 
 		@Override
@@ -279,9 +274,9 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 			panel.add(portField);
 			panel.add(saveInfoCheck);
 
-			int result = JOptionPane.showConfirmDialog(frame, panel, "Join game", 
+			int option = JOptionPane.showConfirmDialog(frame, panel, "Join game", 
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-			if (result == JOptionPane.OK_OPTION) {
+			if (option == JOptionPane.OK_OPTION) {
 				if (saveInfoCheck.isSelected()) {
 					GameServer.settings.setSetting("default_ip_address", addressField.getText());
 					GameServer.settings.setSetting("default_port", portField.getText());
@@ -306,6 +301,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		}
 	}
 
+	@Override
 	public void listenRequests() {
 		Object obj;
 		try {
@@ -328,7 +324,9 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 			System.out.println("Received " + request + " request.");
 			switch (request) {
 				case ATTACK:
-					return getAttack();
+					ShipLocation attackLocation = getAttack();
+					System.out.println("Sending " + attackLocation);
+					return attackLocation;
 				case ATTACK_RESULT:
 					updateMap((ShipLocation) ois.readObject(), (Result) ois.readObject());
 					break;
@@ -338,6 +336,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 				case PLACE_SHIPS:
 					return getLocations();
 				case SEND_PLAYER:
+					System.out.println("Sending " + player.getName());
 					return getPlayer();
 				case START:
 					startGame((Player) ois.readObject());
@@ -353,9 +352,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		return null;
 	}
 	
-	/** Client only. */
 	public ClientPlayer getPlayer() {
-		System.out.println(player.getName());
 		return player;
 	}
 
@@ -376,9 +373,11 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	
 	public void updateMap(ShipLocation guess, Result result) {
 		//TODO
+		System.out.println("Updated user map. Guess Location: " + guess + ". Result: " + result);
 	}
 
 	public void finish(String winner) {
 		//TODO
+		System.out.println("Finished the game. Winner is " + winner);
 	}
 }

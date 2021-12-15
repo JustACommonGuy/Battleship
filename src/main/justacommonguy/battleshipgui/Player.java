@@ -9,13 +9,9 @@ public abstract class Player implements Serializable {
 		this.name = name;
 	}
 
-	public void setUpShips() {
-		//TODO
-	}
-
-	public ShipLocation attack() {
-		//TODO
-		return null;
+	@Override
+	public String toString() {
+		return getName();
 	}
 
 	public void setName(String name) {

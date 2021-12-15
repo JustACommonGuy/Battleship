@@ -25,8 +25,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	public static Settings settings = new Settings(new File("settings.properties"));
 	public static GameServer server;
 	public static BattleshipGUI gui;
-	// ? Would the streams work if we don't keep a reference to the socket?
-	//// private Socket clientSocket;
+	
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 	private ArrayList<Ship> hostLocations = new ArrayList<Ship>();
@@ -84,8 +83,13 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	@Override
+	public void listenRequests() {
+		// TODO
+	}
+
+	@Override
 	public Object respondRequest(Request request) {
-		// TODO Auto-generated method stub
+		// TODO Might send location list to make an excel of the results.
 		return null;
 	}
 
@@ -94,14 +98,14 @@ public class GameServer implements Runnable, NetworkComponent {
 			oos.writeObject(Request.SEND_PLAYER);
 			System.out.println("Requested client to send player info.");
 			client = (Player) ois.readObject();
-			System.out.println("Received client's player info.");
+			System.out.println("Received client's player info. Player: " + client);
 			gui.startGame(client);
 
 			oos.writeObject(Request.START);
 			System.out.println("Requested client to start game.");
 			host = gui.getPlayer();
 			oos.writeObject(host);
-			System.out.println("Sent host info to client.");
+			System.out.println("Sent host info to client. Player: " + host);
 		}
 		catch (IOException | ClassNotFoundException e) {
 			System.out.println("Failed to start the game.");

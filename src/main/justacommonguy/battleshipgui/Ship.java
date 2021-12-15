@@ -3,7 +3,7 @@ package justacommonguy.battleshipgui;
 import java.util.ArrayList;
 
 public class Ship {
-	private ArrayList<ShipLocation> cells = new ArrayList<ShipLocation>();
+	private ArrayList<ShipLocation> locations = new ArrayList<ShipLocation>();
 
 	public Ship() {
 		//TODO 
@@ -12,15 +12,15 @@ public class Ship {
 	public Result checkHit(ShipLocation attackedLocation) {
 		Result result = Result.MISS;
 
-		for (ShipLocation cell : cells) {
-			if (cell.equals(attackedLocation)) {
+		for (ShipLocation location : locations) {
+			if (location.equals(attackedLocation)) {
 				result = Result.HIT;
-				cells.remove(cell);
+				locations.remove(location);
 				break;
 			}
 		}
 
-		if (cells.isEmpty()) {
+		if (locations.isEmpty()) {
 			result = Result.KILL;
 		}
 

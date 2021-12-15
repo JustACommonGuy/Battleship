@@ -1,6 +1,7 @@
 package justacommonguy.battleshipgui.networking;
 
 public interface NetworkComponent {
-	/* Yes, I know that an object return type leads to a terrible software design. */
+	// ?Chat methods. Maybe listenMessages() and sendMessage()
+	public void listenRequests();
 	public Object respondRequest(Request request);
 }
