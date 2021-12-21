@@ -6,8 +6,6 @@ public class HighlightInitiator {
 	
 	private ArrayList<HighlightListener> listeners = new ArrayList<HighlightListener>();
 
-	public HighlightInitiator() {}
-
 	public void addHighlightListener(HighlightListener listener) {
 		listeners.add(listener);
 	}

@@ -12,8 +12,8 @@ import java.util.Properties;
 
 public class Settings {
 
-	Properties properties = new Properties();
-	private static File file;
+	private Properties properties = new Properties();
+	private File file;
 
 	private static String SERVER_PORT = "1337";
 	private static String IP_ADDRESS = "";
@@ -24,7 +24,7 @@ public class Settings {
 	private static String KILL = "150,30,30";
 
 	public Settings(File file) {
-		Settings.file = file;
+		this.file = file;
 		while (true) {
 			try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 				properties.load(reader);

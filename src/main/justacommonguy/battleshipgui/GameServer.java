@@ -140,7 +140,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	
 	@SuppressWarnings("unchecked")
 	private void unlockPlacing() {
-		hostLocations = gui.getLocations();
+		hostLocations = gui.getShips();
 		try {
 			oos.writeObject(Request.PLACE_SHIPS);
 			clientLocations = (ArrayList<Ship>) ois.readObject();

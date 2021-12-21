@@ -3,6 +3,7 @@ package justacommonguy.battleshipgui;
 import java.io.Serializable;
 
 public class ShipLocation implements Serializable {
+	
 	private int x;
 	private int y;
 	private int[] coords = new int[2];
@@ -15,14 +16,25 @@ public class ShipLocation implements Serializable {
 		this.x = x;
 		this.y = y;
 		coords[0] = x;
-		coords[1] =y;
+		coords[1] = y;
 		cellNum = this.y * 10 + this.x;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
 		ShipLocation location = (ShipLocation) obj;
 		return this.cellNum == location.cellNum;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 42;
+		int result = 3;
+		result = prime * result + cellNum;
+		return result;
 	}
 
 	@Override

@@ -17,6 +17,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -31,23 +33,21 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import justacommonguy.battleshipgui.ClientPlayer;
+import justacommonguy.battleshipgui.Faction;
 import justacommonguy.battleshipgui.GameServer;
 import justacommonguy.battleshipgui.Player;
 import justacommonguy.battleshipgui.Result;
 import justacommonguy.battleshipgui.Ship;
 import justacommonguy.battleshipgui.networking.Request;
 import justacommonguy.battleshipgui.ShipLocation;
+import justacommonguy.battleshipgui.Ship.Axis;
 import justacommonguy.battleshipgui.networking.NetworkComponent;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
+import sun.security.x509.IssuerAlternativeNameExtension;
 
 // !Should keep this in mind: https://www.oracle.com/java/technologies/javase/codeconventions-fileorganization.html#1852
 public class BattleshipGUI implements GUI, NetworkComponent {
-
-	private enum Faction {
-		ALLY,
-		ENEMY
-	}
 
 	private ClientPlayer player;
 	//? Only the opponent's name might be needed
@@ -64,22 +64,30 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	// The height and the width need to have an extra column or row for the letters and numbers.
 	private static final int HEIGHT = 11;
 	private static final int WIDTH = 11;
+	private static final int[] SHIP_SIZES = {2, 3, 3, 4, 5};
 
 	private static final double Y_RESOLUTION = 
 			Toolkit.getDefaultToolkit().getScreenSize().getHeight();
 	private static final double X_RESOLUTION =
 			Toolkit.getDefaultToolkit().getScreenSize().getWidth();
-	/* GridLayout does not allow for specific cell sizes, so we set a global
+	/** GridLayout does not allow for specific cell sizes, so we set a global
 		size to display squared cells. */
 	private static final Dimension PANEL_SIZE = 
 			new Dimension(((int) Y_RESOLUTION / 3), (int) (Y_RESOLUTION / 3));
 
-	private JFrame frame = new JFrame();;
+	private JFrame frame = new JFrame();
 	private JPanel playerMap;
 	private JPanel enemyMap;
 	private JLabel enemyGridLabel;
-	private ArrayList<Cell> playerCells = new ArrayList<Cell>();
-	private ArrayList<Cell> enemyCells = new ArrayList<Cell>();
+	//TODO. Change this panel when game has started.
+	private JPanel buttonPanel;
+	private JButton hostButton;
+	private JButton joinButton;
+
+	private ArrayList<Ship> shipList;
+	// This is the weirdest thing I've ever typed, but it's the best design I can come up with.
+	private HashMap<Faction, HashMap<ShipLocation, Cell>> cells = 
+			new HashMap<Faction, HashMap<ShipLocation, Cell>>();
 	
 
 	public BattleshipGUI(String hostUsername) {
@@ -99,8 +107,8 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		JDialog dialog = popup.createDialog(frame, "Welcome");
 
 		popup.selectInitialValue();
-        dialog.setVisible(true);
-        dialog.dispose();
+		dialog.setVisible(true);
+		dialog.dispose();
 		
 		return (String) popup.getInputValue();
 	}
@@ -119,8 +127,8 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		JPanel playArea = new JPanel(new GridBagLayout());
 		Font bold = new Font(Font.SANS_SERIF, Font.BOLD, 20);
 
-		enemyMap = makeMap(enemyCells, Faction.ENEMY);
-		playerMap = makeMap(playerCells, Faction.ALLY);
+		enemyMap = makeMap(cells, Faction.ENEMY);
+		playerMap = makeMap(cells, Faction.ALLY);
 		JLabel gridLabel = new JLabel("YOUR GRID");
 		enemyGridLabel = new JLabel("OPPONENT'S GRID");
 		gridLabel.setFont(bold);
@@ -140,13 +148,13 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 
 		JPanel westPanel = new JPanel();
 		westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.Y_AXIS));
-		JPanel buttonPanel = new JPanel();
+		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
 		JPanel chatPanel = new JPanel();
 
-		JButton hostButton = new JButton("Host game");
+		hostButton = new JButton("Host game");
 		hostButton.addActionListener(new HostGameListener());
-		JButton joinButton = new JButton("Join game");
+		joinButton = new JButton("Join game");
 		joinButton.addActionListener(new JoinGameListener());
 
 		buttonPanel.add(hostButton);
@@ -157,18 +165,22 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 
 		frame.add(westPanel, BorderLayout.WEST);
 		frame.add(eastPanel, BorderLayout.EAST);
-		/* For reasons that humanity will never understand, 
+		/* For reasons that humanity will never know, 
 		the dumb frame needs to be brought to the front when a popup appears. */
 		SwingUtils.frameToFront(frame);
+		placeShipsRandomly();
 	}
 
-	private JPanel makeMap(ArrayList<Cell> cellList, Faction faction) {
+	private JPanel makeMap(HashMap<Faction, HashMap<ShipLocation, Cell>> cells, Faction faction) {
 		GridLayout grid = new GridLayout(HEIGHT, WIDTH);
 		grid.setVgap(1);
 		grid.setHgap(1);
 		JPanel map = new JPanel(grid);
 		map.setPreferredSize(PANEL_SIZE);
 		map.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+
+		HashMap<ShipLocation, Cell> cellList = new HashMap<ShipLocation, Cell>();
+		cells.put(faction, cellList);
 		
 		int cellX = 0;
 		int cellY = 0;
@@ -207,14 +219,16 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 			Ironically, the initiators need the listener cells as well. */
 			else {
 				Cell cell = null;
+				ShipLocation location = new ShipLocation(cellX, cellY);
 				
 				switch (faction) {
 					case ALLY:
-						cell = new AllyCell(new ShipLocation(cellX, cellY), 
+						//TODO. Randomly assign ship locations
+						cell = new AllyCell(location, 
 								xHighlightInitiators[cellX], yHighlightInitiators[cellY]);
 						break;
 					case ENEMY:
-						cell = new EnemyCell(new ShipLocation(cellX, cellY), 
+						cell = new EnemyCell(location, 
 								xHighlightInitiators[cellX], yHighlightInitiators[cellY]);
 						break;
 					default:
@@ -224,7 +238,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 				yHighlightInitiators[cellY].addHighlightListener(cell);
 
 				map.add(cell);
-				cellList.add(cell);
+				cellList.put(location, cell);
 			}
 			
 			cellX++;
@@ -235,6 +249,92 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		}
 
 		return map;
+	}
+
+	private void placeShipsRandomly() {
+		shipList = new ArrayList<Ship>();
+		try {
+			for (int size : SHIP_SIZES) {
+				Ship randomShip = getRandomShip(size);
+				shipList.add(randomShip);
+				for (ShipLocation location : randomShip.getLocations()) {
+					AllyCell cell = (AllyCell) GameServer.gui.getCell(location, Faction.ALLY);
+					cell.setShip(randomShip);
+				}
+			}
+		}
+		catch (RandomShipFailure e) {
+			//TODO
+			System.out.println("ERROR: Could not place random ships.");
+		}
+	}
+	
+	private Ship getRandomShip(int shipSize) throws RandomShipFailure {
+		ArrayList<ShipLocation> locations = new ArrayList<ShipLocation>();
+		ShipLocation location = null;
+		int attemptsCount = 0;
+		boolean isSuccessful = false;
+		Axis axis = Axis.X;
+
+		if (new Random().nextBoolean()) {
+			axis = Axis.Y;
+		}
+
+		while (!isSuccessful && (attemptsCount++ < 3*HEIGHT*WIDTH)) {
+			int x = (int) (Math.random() * (WIDTH -1) + 1);
+			int y = (int) (Math.random() * (HEIGHT - 1) + 1);
+			location = new ShipLocation(x, y);
+
+			int position = 0;
+			isSuccessful = true;
+			while (isSuccessful && (position < shipSize)) {
+				loop1:
+				for (Ship existingShip : shipList) {
+					for (ShipLocation existingLocation : existingShip.getLocations()) {
+						if (location.equals(existingLocation)) {
+							isSuccessful = false;
+							break loop1;
+						}
+					}
+				}
+				if (isSuccessful) {
+					locations.add(location);
+					position++;
+					switch (axis) {
+						case X:
+							location = new ShipLocation(++x, y);
+							break;
+						case Y:
+							location = new ShipLocation(x, ++y);
+							break;
+						default:
+							break;
+					}
+				}
+				if ((x > (WIDTH - 1)) || (x < 0)) {
+					locations.clear();
+					isSuccessful = false;
+				}
+				if ((y > (HEIGHT - 1)) || (y < 0)) {
+					locations.clear();
+					isSuccessful = false;
+				}
+			}
+		}
+
+		if (isSuccessful == false) {
+			throw new RandomShipFailure("Could not generate random ship.");
+		}
+		
+		return new Ship(locations);
+	}
+
+	public Cell getCell(ShipLocation location, Faction faction) {
+		HashMap<ShipLocation, Cell> cellList = cells.get(faction);
+		if (!cellList.containsKey(location)) {
+			System.out.println("Ouch. " + location);
+		}
+		return cellList.get(location);
 	}
 
 	public class HostGameListener implements ActionListener {
@@ -334,7 +434,8 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 					finish((String) ois.readObject());
 					break;
 				case PLACE_SHIPS:
-					return getLocations();
+					System.out.println("Sending ships.");
+					return getShips();
 				case SEND_PLAYER:
 					System.out.println("Sending " + player.getName());
 					return getPlayer();
@@ -361,7 +462,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		enemyGridLabel.setText(opponent.getName() + "'S GRID");
 	}
 
-	public ArrayList<Ship> getLocations() {
+	public ArrayList<Ship> getShips() {
 		//TODO.
 		return null;
 	}
