@@ -3,6 +3,7 @@ package justacommonguy.battleshipgui;
 import java.util.ArrayList;
 
 import justacommonguy.battleshipgui.gui.AllyCell;
+import justacommonguy.battleshipgui.gui.BattleshipGUI;
 
 public class Ship {
 
@@ -10,14 +11,34 @@ public class Ship {
 		X,
 		Y
 	}
+
+	/** String array for all ship names. The order must match with 
+	 * {@link justacommonguy.battleshipgui.gui.BattleshipGUI#SHIP_SIZES SHIP_SIZES}. 
+	 * Submarine is not used since that would overcomplicate toString().*/
+	private static final String[] SHIP_NAMES = 
+			{"Destroyer", "Cruiser", "Submarine", "Battleship", "Carrier"};
 	
 	private ArrayList<ShipLocation> locations = new ArrayList<ShipLocation>();
-	private String owner;
 	private int size;
 
 	public Ship(ArrayList<ShipLocation> locations) {
 		//TODO
+		if ((locations.size() < BattleshipGUI.SHIP_SIZES[0]) || 
+				(locations.size() > BattleshipGUI.SHIP_SIZES[BattleshipGUI.SHIP_SIZES.length-1])) {
+			throw new IllegalArgumentException("Ship's size is out of bounds.");
+		}
 		this.locations = locations;
+		size = locations.size();
+	}
+
+	@Override
+	public String toString() {
+		for (int i = 0; i < BattleshipGUI.SHIP_SIZES.length; i++) {
+			if (size == BattleshipGUI.SHIP_SIZES[i]) {
+				return SHIP_NAMES[i];
+			}
+		}
+		return null;
 	}
 
 	public ArrayList<ShipLocation> getNewLocations(ShipLocation oldLoc, ShipLocation newLoc) {
@@ -29,6 +50,7 @@ public class Ship {
 		int yIncrement = newLoc.getY() - oldLoc.getY();
 		ArrayList<ShipLocation> newLocations = new ArrayList<ShipLocation>();
 
+		System.out.println("");
 		for (ShipLocation location : locations) {
 			ShipLocation updatedLocation = null;
 			try {
@@ -41,17 +63,14 @@ public class Ship {
 
 			AllyCell targetCell = (AllyCell) GameServer.gui.getCell(updatedLocation, Faction.ALLY);
 			if ((targetCell != null) && targetCell.hasShip() == false) {
-				System.out.println("location: " + updatedLocation);
+				System.out.println("New location of " + this + ": " + updatedLocation);
 				newLocations.add(updatedLocation);
 			}
 			else {
-				//!
-				System.out.println("Failed update. " + targetCell.hasShip());
 				return null;
 			}
 		}
 		
-		System.out.println("");
 		return newLocations;
 	}
 

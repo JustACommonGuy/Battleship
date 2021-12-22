@@ -15,11 +15,13 @@ public class AllyCell extends Cell implements DragListener {
 	private static DragInitiator dragInitiator = new DragInitiator();
 	private static boolean placementAllowed = true;
 	private static AllyCell oldCell;
+	private static ArrayList<AllyCell> oldCellList;
+	private static Ship oldShip;
 
-	private static Color MISS = GameServer.settings.getColor("ally_miss_color");
-	private static Color SHIP = GameServer.settings.getColor("ally_ship_color");
-	private static Color HIT = GameServer.settings.getColor("ally_hit_color");
-	private static Color KILL = GameServer.settings.getColor("ally_kill_color");
+	private static Color MISS_COLOR = GameServer.settings.getColor("ally_miss_color");
+	private static Color SHIP_COLOR = GameServer.settings.getColor("ally_ship_color");
+	private static Color HIT_COLOR = GameServer.settings.getColor("ally_hit_color");
+	private static Color KILL_COLOR = GameServer.settings.getColor("ally_kill_color");
 
 	private Ship ship;
 
@@ -33,35 +35,47 @@ public class AllyCell extends Cell implements DragListener {
 			setCellColor(DEFAULT);
 		}
 		else {
-			setCellColor(SHIP);
+			setCellColor(SHIP_COLOR);
 		}
 	}
 
 	public void removeOldShip() {
-		for (AllyCell cell : oldCell.getRelatedCells()) {
+		for (AllyCell cell : oldCellList) {
 			cell.setShip(null);
 		}
+		removeOldCell();
+	}
 
+	public void setOldCell() {
+		oldCell = this;
+		oldCellList = oldCell.getRelatedCells();
+		oldShip = oldCell.getShip();
+	}
+
+	public void removeOldCell() {
 		oldCell = null;
+		oldCellList = null;
+		oldShip = null;
 	}
 
 	@Override
 	public void shipDragged() {
 		if ((oldCell != null) && (oldCell != this)) {
-			Ship ship = oldCell.getShip();
-			ArrayList<ShipLocation> newLocations = ship.getNewLocations(
+			ArrayList<ShipLocation> newLocations = oldShip.getNewLocations(
 					oldCell.getShipLocation(), super.location);
 			
 			if (newLocations != null) {
+				Ship oldShip = AllyCell.oldShip;
 				removeOldShip();
 				for (ShipLocation newLocation : newLocations) {
-					AllyCell cell = (AllyCell) GameServer.gui.getCell(newLocation, Faction.ALLY);
-					cell.setShip(ship);
+					AllyCell newCell = (AllyCell) GameServer.gui.getCell(newLocation, Faction.ALLY);
+					newCell.setShip(oldShip);
 				}
-				ship.setLocations(newLocations);
+				oldShip.setLocations(newLocations);
+				super.mouseEntered(null);
 			}
 			else {
-				oldCell = null;
+				removeOldCell();
 			}
 		}
 	}
@@ -69,7 +83,7 @@ public class AllyCell extends Cell implements DragListener {
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (placementAllowed && (ship != null)) {
-			oldCell = this;
+			setOldCell();
 		}
 	}
 
@@ -86,30 +100,17 @@ public class AllyCell extends Cell implements DragListener {
 		if (placementAllowed) {
 			dragInitiator.setDragListener(this);
 		}
-		else {
-			super.mouseEntered(e);
-		}
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		if (!placementAllowed) {
-			super.mouseExited(e);
-		}
+		super.mouseEntered(e);
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if (!placementAllowed) {
-			return;
+		if (placementAllowed) {
+			//TODO Change ship orientation
 		}
-		//TODO Change ship orientation
 	}
 
-	public Ship getShip() {
-		return ship;
-	}
-
+	// ? Might not be needed
 	public ArrayList<AllyCell> getRelatedCells() {
 		ArrayList<AllyCell> cells = new ArrayList<AllyCell>();
 		ArrayList<ShipLocation> locations = ship.getLocations();
@@ -122,7 +123,7 @@ public class AllyCell extends Cell implements DragListener {
 
 	public boolean hasShip() {
 		if (oldCell != null) {
-			for (AllyCell cell : oldCell.getRelatedCells()) {
+			for (AllyCell cell : oldCellList) {
 				if (cell.equals(this)) {
 					return false;
 				}
@@ -130,5 +131,29 @@ public class AllyCell extends Cell implements DragListener {
 		}
 
 		return ship != null;
+	}
+
+	public Ship getShip() {
+		return ship;
+	}
+
+	@Override
+	public Color getMissColor() {
+		return MISS_COLOR;
+	}
+
+	@Override
+	public Color getShipColor() {
+		return SHIP_COLOR;
+	}
+
+	@Override
+	public Color getHitColor() {
+		return HIT_COLOR;
+	}
+
+	@Override
+	public Color getKillColor() {
+		return KILL_COLOR;
 	}
 }
