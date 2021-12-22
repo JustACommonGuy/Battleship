@@ -16,10 +16,10 @@ public class AllyCell extends Cell implements DragListener {
 	private static boolean placementAllowed = true;
 	private static AllyCell oldCell;
 
-	private static Color MISS = GameServer.settings.getColor("ally_miss_color");
-	private static Color SHIP = GameServer.settings.getColor("ally_ship_color");
-	private static Color HIT = GameServer.settings.getColor("ally_hit_color");
-	private static Color KILL = GameServer.settings.getColor("ally_kill_color");
+	private static Color MISS_COLOR = GameServer.settings.getColor("ally_miss_color");
+	private static Color SHIP_COLOR = GameServer.settings.getColor("ally_ship_color");
+	private static Color HIT_COLOR = GameServer.settings.getColor("ally_hit_color");
+	private static Color KILL_COLOR = GameServer.settings.getColor("ally_kill_color");
 
 	private Ship ship;
 
@@ -33,7 +33,7 @@ public class AllyCell extends Cell implements DragListener {
 			setCellColor(DEFAULT);
 		}
 		else {
-			setCellColor(SHIP);
+			setCellColor(SHIP_COLOR);
 		}
 	}
 
@@ -41,7 +41,6 @@ public class AllyCell extends Cell implements DragListener {
 		for (AllyCell cell : oldCell.getRelatedCells()) {
 			cell.setShip(null);
 		}
-
 		oldCell = null;
 	}
 
@@ -59,6 +58,7 @@ public class AllyCell extends Cell implements DragListener {
 					cell.setShip(ship);
 				}
 				ship.setLocations(newLocations);
+				super.mouseEntered(null);
 			}
 			else {
 				oldCell = null;
@@ -86,24 +86,14 @@ public class AllyCell extends Cell implements DragListener {
 		if (placementAllowed) {
 			dragInitiator.setDragListener(this);
 		}
-		else {
-			super.mouseEntered(e);
-		}
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		if (!placementAllowed) {
-			super.mouseExited(e);
-		}
+		super.mouseEntered(e);
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if (!placementAllowed) {
-			return;
+		if (placementAllowed) {
+			//TODO Change ship orientation
 		}
-		//TODO Change ship orientation
 	}
 
 	public Ship getShip() {
@@ -130,5 +120,25 @@ public class AllyCell extends Cell implements DragListener {
 		}
 
 		return ship != null;
+	}
+
+	@Override
+	public Color getMissColor() {
+		return MISS_COLOR;
+	}
+
+	@Override
+	public Color getShipColor() {
+		return SHIP_COLOR;
+	}
+
+	@Override
+	public Color getHitColor() {
+		return HIT_COLOR;
+	}
+
+	@Override
+	public Color getKillColor() {
+		return KILL_COLOR;
 	}
 }

@@ -34,6 +34,7 @@ import javax.swing.SwingConstants;
 
 import justacommonguy.battleshipgui.ClientPlayer;
 import justacommonguy.battleshipgui.Faction;
+// ? Might want to make the import static
 import justacommonguy.battleshipgui.GameServer;
 import justacommonguy.battleshipgui.Player;
 import justacommonguy.battleshipgui.Result;
@@ -44,9 +45,10 @@ import justacommonguy.battleshipgui.Ship.Axis;
 import justacommonguy.battleshipgui.networking.NetworkComponent;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
-import sun.security.x509.IssuerAlternativeNameExtension;
 
 // !Should keep this in mind: https://www.oracle.com/java/technologies/javase/codeconventions-fileorganization.html#1852
+// TODO. Add better exception handling
+// TODO. Add better logging
 public class BattleshipGUI implements GUI, NetworkComponent {
 
 	private ClientPlayer player;
@@ -62,9 +64,11 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	// https://piped.kavin.rocks/watch?v=aedYlXutIDU&quality=dash&dark_mode=true&subtitles=es%2Cen
 
 	// The height and the width need to have an extra column or row for the letters and numbers.
-	private static final int HEIGHT = 11;
-	private static final int WIDTH = 11;
-	private static final int[] SHIP_SIZES = {2, 3, 3, 4, 5};
+	public static final int HEIGHT = 11;
+	public static final int WIDTH = 11;
+	/** Array for all ship sizes. The order must match with 
+	 * {@link justacommonguy.battleshipgui.Ship#SHIP_NAMES SHIP_NAMES}.*/
+	public static final int[] SHIP_SIZES = {2, 3, 3, 4, 5};
 
 	private static final double Y_RESOLUTION = 
 			Toolkit.getDefaultToolkit().getScreenSize().getHeight();
@@ -98,7 +102,6 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 			GameServer.settings.saveSettings();
 		}
 		player = new ClientPlayer(GameServer.settings.getSetting("username"));
-		
 	}
 
 	public String askName() {
@@ -196,7 +199,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		for (int i = 0; i < WIDTH; i++) {
 			yHighlightInitiators[i] = new HighlightInitiator();
 		}
-
+		
 		char rowLetter = 'A';
 		int columnNumber = 1;
 		for (int i = 0; i < HEIGHT*WIDTH; i++) {
@@ -223,19 +226,18 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 				
 				switch (faction) {
 					case ALLY:
-						//TODO. Randomly assign ship locations
 						cell = new AllyCell(location, 
-								xHighlightInitiators[cellX], yHighlightInitiators[cellY]);
+								xHighlightInitiators[cellY], yHighlightInitiators[cellX]);
 						break;
 					case ENEMY:
 						cell = new EnemyCell(location, 
-								xHighlightInitiators[cellX], yHighlightInitiators[cellY]);
+								xHighlightInitiators[cellY], yHighlightInitiators[cellX]);
 						break;
 					default:
 						break;
 				}
-				xHighlightInitiators[cellX].addHighlightListener(cell);
-				yHighlightInitiators[cellY].addHighlightListener(cell);
+				xHighlightInitiators[cellY].addHighlightListener(cell);
+				yHighlightInitiators[cellX].addHighlightListener(cell);
 
 				map.add(cell);
 				cellList.put(location, cell);
@@ -258,13 +260,12 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 				Ship randomShip = getRandomShip(size);
 				shipList.add(randomShip);
 				for (ShipLocation location : randomShip.getLocations()) {
-					AllyCell cell = (AllyCell) GameServer.gui.getCell(location, Faction.ALLY);
+					AllyCell cell = (AllyCell) getCell(location, Faction.ALLY);
 					cell.setShip(randomShip);
 				}
 			}
 		}
 		catch (RandomShipFailure e) {
-			//TODO
 			System.out.println("ERROR: Could not place random ships.");
 		}
 	}
@@ -287,19 +288,16 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 
 			int position = 0;
 			isSuccessful = true;
-			while (isSuccessful && (position < shipSize)) {
-				loop1:
-				for (Ship existingShip : shipList) {
-					for (ShipLocation existingLocation : existingShip.getLocations()) {
-						if (location.equals(existingLocation)) {
-							isSuccessful = false;
-							break loop1;
-						}
-					}
+			while (isSuccessful && (position++ < shipSize)) {
+				isSuccessful = isLocationUsed(location);
+				if ((x > (WIDTH - 1)) || (x < 0)) {
+					isSuccessful = false;
+				}
+				if ((y > (HEIGHT - 1)) || (y < 0)) {
+					isSuccessful = false;
 				}
 				if (isSuccessful) {
 					locations.add(location);
-					position++;
 					switch (axis) {
 						case X:
 							location = new ShipLocation(++x, y);
@@ -311,13 +309,8 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 							break;
 					}
 				}
-				if ((x > (WIDTH - 1)) || (x < 0)) {
+				else {
 					locations.clear();
-					isSuccessful = false;
-				}
-				if ((y > (HEIGHT - 1)) || (y < 0)) {
-					locations.clear();
-					isSuccessful = false;
 				}
 			}
 		}
@@ -325,8 +318,21 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		if (isSuccessful == false) {
 			throw new RandomShipFailure("Could not generate random ship.");
 		}
-		
+
+		System.out.println("Size of ship: " + locations.size());
 		return new Ship(locations);
+	}
+
+	/** Only applies for AllyCell */
+	private boolean isLocationUsed(ShipLocation location) {
+		for (Ship existingShip : shipList) {
+			for (ShipLocation existingLocation : existingShip.getLocations()) {
+				if (location.equals(existingLocation)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	public Cell getCell(ShipLocation location, Faction faction) {

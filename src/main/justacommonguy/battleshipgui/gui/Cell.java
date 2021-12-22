@@ -6,6 +6,7 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JPanel;
 
+import justacommonguy.battleshipgui.Result;
 import justacommonguy.battleshipgui.ShipLocation;
 
 public abstract class Cell extends JPanel implements MouseListener, HighlightListener {
@@ -27,6 +28,22 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 	public void setCellColor(Color color) {
 		oldColor = color;
 		setBackground(color);
+	}
+
+	public void setCellColor(Result result) {
+		switch (result) {
+			case HIT:
+				setCellColor(getHitColor());
+				break;
+			case KILL:
+				setCellColor(getKillColor());
+				break;
+			case MISS:
+				setCellColor(getMissColor());
+				break;
+			default:
+				break;
+		}
 	}
 
 	@Override
@@ -71,4 +88,9 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 	public ShipLocation getShipLocation() {
 		return location;
 	}
+
+	abstract public Color getMissColor();
+	abstract public Color getShipColor();
+	abstract public Color getHitColor();
+	abstract public Color getKillColor();
 }

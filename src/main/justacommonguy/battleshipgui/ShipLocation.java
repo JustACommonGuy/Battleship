@@ -26,14 +26,17 @@ public class ShipLocation implements Serializable {
 			return false;
 		}
 		ShipLocation location = (ShipLocation) obj;
-		return this.cellNum == location.cellNum;
+		// We can't just evaluate the cellNum because a location out of bounds can match.
+		// E.g. (1,2) and (11,1). 20+1 == 11+10
+		return ((this.x == location.getX()) && (this.y == location.getY()));
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 42;
 		int result = 3;
-		result = prime * result + cellNum;
+		result = prime * result + x;
+		result = prime * result + y;
 		return result;
 	}
 
