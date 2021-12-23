@@ -16,4 +16,8 @@ public class DragInitiator {
 	public void dragged() {
 		listener.shipDragged();
 	}
+
+	public void dragging() {
+		listener.draggingShip();
+	}
 }

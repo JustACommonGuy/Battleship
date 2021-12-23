@@ -52,7 +52,7 @@ public class AllyCell extends Cell implements DragListener {
 		oldShip = oldCell.getShip();
 	}
 
-	public void removeOldCell() {
+	public static void removeOldCell() {
 		oldCell = null;
 		oldCellList = null;
 		oldShip = null;
@@ -64,18 +64,48 @@ public class AllyCell extends Cell implements DragListener {
 			ArrayList<ShipLocation> newLocations = oldShip.getNewLocations(
 					oldCell.getShipLocation(), super.location);
 			
+			boolean placementValid = true;
 			if (newLocations != null) {
-				Ship oldShip = AllyCell.oldShip;
-				removeOldShip();
-				for (ShipLocation newLocation : newLocations) {
-					AllyCell newCell = (AllyCell) GameServer.gui.getCell(newLocation, Faction.ALLY);
-					newCell.setShip(oldShip);
+				ArrayList<Cell> newCells = GameServer.gui.getCellList(newLocations, Faction.ALLY);
+				for (Cell cell : newCells) {
+					AllyCell newCell = (AllyCell) cell;
+					if (newCell.hasShip()) {
+						placementValid = false;
+					}
 				}
-				oldShip.setLocations(newLocations);
-				super.mouseEntered(null);
+				
+				if (placementValid) {
+					Ship oldShip = AllyCell.oldShip;
+					removeOldShip();
+					for (Cell cell : newCells) {
+						AllyCell newCell = (AllyCell) cell;
+						newCell.setShip(oldShip);
+					}
+					oldShip.setLocations(newLocations);
+					mouseExited(null);
+				}
 			}
 			else {
+				placementValid = false;
+			}
+			if (!placementValid) {
 				removeOldCell();
+			}
+		}
+	}
+
+	@Override
+	public void draggingShip() {
+		if (oldCell != null) {
+			ArrayList<ShipLocation> newLocations = oldShip.getNewLocations(
+					oldCell.getShipLocation(), super.location);
+			
+			if (newLocations != null) {
+				ArrayList<Cell> newCells = GameServer.gui.getCellList(newLocations, Faction.ALLY);
+				for (Cell cell : newCells) {
+					AllyCell newCell = (AllyCell) cell;
+					newCell.highlightPlaceholder(SHIP_COLOR);
+				}
 			}
 		}
 	}
@@ -92,15 +122,20 @@ public class AllyCell extends Cell implements DragListener {
 		if (placementAllowed) {
 			dragInitiator.dragged();
 		}
-		
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		if (placementAllowed) {
 			dragInitiator.setDragListener(this);
+			if (oldCell != null) {
+				super.mouseEntered(null);
+				dragInitiator.dragging();
+			}
 		}
-		super.mouseEntered(e);
+		else {
+			super.mouseEntered(e);
+		}
 	}
 
 	@Override
@@ -110,15 +145,37 @@ public class AllyCell extends Cell implements DragListener {
 		}
 	}
 
-	// ? Might not be needed
-	public ArrayList<AllyCell> getRelatedCells() {
-		ArrayList<AllyCell> cells = new ArrayList<AllyCell>();
-		ArrayList<ShipLocation> locations = ship.getLocations();
-		for (ShipLocation loc : locations) {
-			AllyCell cell = (AllyCell) GameServer.gui.getCell(loc, Faction.ALLY);
-			cells.add(cell);
+	public void highlightPlaceholder(Color color) {
+		int increment = fixIncrement(-50, color);
+		color = new Color(color.getRed()+increment, color.getGreen()+increment, color.getBlue()+increment);
+
+		boolean isOwnShip = false;
+		for (AllyCell cell : oldCellList) {
+			if (cell.equals(this)) {
+				isOwnShip = true;
+			}
 		}
-		return cells;
+
+		if ((oldColor != DEFAULT) && (isOwnShip == false)) {
+			setBackground(KILL_COLOR);
+		}
+		else {
+			setBackground(color);
+		}
+	}
+
+	public ArrayList<AllyCell> getRelatedCells() {
+		if (ship == null) {
+			return null;
+		}
+
+		ArrayList<AllyCell> allyCells = new ArrayList<AllyCell>();
+		ArrayList<Cell> cells = GameServer.gui.getCellList(ship.getLocations(), Faction.ALLY);
+		for (Cell cell : cells) {
+			allyCells.add((AllyCell) cell);
+		}
+
+		return allyCells;
 	}
 
 	public boolean hasShip() {

@@ -22,7 +22,6 @@ public class Ship {
 	private int size;
 
 	public Ship(ArrayList<ShipLocation> locations) {
-		//TODO
 		if ((locations.size() < BattleshipGUI.SHIP_SIZES[0]) || 
 				(locations.size() > BattleshipGUI.SHIP_SIZES[BattleshipGUI.SHIP_SIZES.length-1])) {
 			throw new IllegalArgumentException("Ship's size is out of bounds.");
@@ -50,7 +49,7 @@ public class Ship {
 		int yIncrement = newLoc.getY() - oldLoc.getY();
 		ArrayList<ShipLocation> newLocations = new ArrayList<ShipLocation>();
 
-		System.out.println("");
+		//// System.out.println("");
 		for (ShipLocation location : locations) {
 			ShipLocation updatedLocation = null;
 			try {
@@ -62,8 +61,8 @@ public class Ship {
 			}
 
 			AllyCell targetCell = (AllyCell) GameServer.gui.getCell(updatedLocation, Faction.ALLY);
-			if ((targetCell != null) && targetCell.hasShip() == false) {
-				System.out.println("New location of " + this + ": " + updatedLocation);
+			if (targetCell != null) {
+				//// System.out.println("New location of " + this + ": " + updatedLocation);
 				newLocations.add(updatedLocation);
 			}
 			else {

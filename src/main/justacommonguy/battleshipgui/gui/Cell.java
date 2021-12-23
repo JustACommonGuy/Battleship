@@ -66,7 +66,23 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 		yInitiator.unfire();
 	}
 
+	/** Fixes the increment if it would make the new highlighting values illegal. */
+	public int fixIncrement(int increment, Color color) {
+		int[] rgb = {color.getRed(), color.getGreen(), color.getBlue()};
+
+		for (int value : rgb) {
+			if (value + increment > 255) {
+				increment = 255 - value;
+			}
+			if (value + increment < 0) {
+				increment = value;
+			}
+		}
+		return increment;
+	}
+
 	public void highlight(int increment) {
+		increment = fixIncrement(increment, oldColor);
 		setBackground(new Color(oldColor.getRed() + increment, oldColor.getGreen() + increment, 
 				oldColor.getBlue() + increment));
 	}

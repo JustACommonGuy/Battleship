@@ -323,7 +323,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		return new Ship(locations);
 	}
 
-	/** Only applies for AllyCell */
+	/** Only applies for AllyCell. Only used by getRandomShip() */
 	private boolean isLocationUsed(ShipLocation location) {
 		for (Ship existingShip : shipList) {
 			for (ShipLocation existingLocation : existingShip.getLocations()) {
@@ -341,6 +341,16 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 			System.out.println("Ouch. " + location);
 		}
 		return cellList.get(location);
+	}
+
+	public ArrayList<Cell> getCellList(ArrayList<ShipLocation> locationList, Faction faction) {
+		ArrayList<Cell> cellList = new ArrayList<Cell>();
+		
+		for (ShipLocation location : locationList) {
+			cellList.add(getCell(location, faction));
+		}
+		
+		return cellList;
 	}
 
 	public class HostGameListener implements ActionListener {
