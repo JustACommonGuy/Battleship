@@ -10,8 +10,8 @@ public class ShipLocation implements Serializable {
 	private int cellNum;
 
 	public ShipLocation(int x, int y) {
-		if ((x < 0) || (y < 0)) {
-			throw new IllegalArgumentException("Arguments cannot be negative integers.");
+		if ((x <= 0) || (y <= 0)) {
+			throw new IllegalArgumentException("Arguments have to be positive integers.");
 		}
 		this.x = x;
 		this.y = y;
@@ -59,13 +59,5 @@ public class ShipLocation implements Serializable {
 
 	public int getCellNum() {
 		return cellNum;
-	}
-
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	public void setY(int y) {
-		this.y = y;
 	}
 }

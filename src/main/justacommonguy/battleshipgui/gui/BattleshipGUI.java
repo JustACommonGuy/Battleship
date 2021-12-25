@@ -69,7 +69,10 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	public BattleshipGUI(String hostUsername) {
 		//TODO
 
-		if ((hostUsername == null) && (GameServer.settings.getSetting("username").equals(""))) {
+		if (GameServer.settings.getSetting("username").equals("")) {
+			if (hostUsername == null) {
+				hostUsername = askName();
+			}
 			GameServer.settings.setSetting("username", hostUsername);
 			GameServer.settings.saveSettings();
 		}
@@ -238,7 +241,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 					System.out.println("Sending " + attackLocation);
 					return attackLocation;
 				case ATTACK_RESULT:
-					updateMap((ShipLocation) ois.readObject(), (Result) ois.readObject());
+					updateMap((ShipLocation) ois.readObject(), (Result) ois.readObject(), (Faction) ois.readObject());
 					break;
 				case FINISH:
 					finish((String) ois.readObject());
@@ -250,7 +253,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 					System.out.println("Sending " + player.getName());
 					return getPlayer();
 				case START:
-					startGame((Player) ois.readObject());
+					startGame((String) ois.readObject());
 					break;
 				default:
 					throw new IOException();
@@ -267,9 +270,9 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		return player;
 	}
 
-	public void startGame(Player opponent) {
-		this.opponent = opponent;
-		enemyGridLabel.setText(opponent.getName() + "'S GRID");
+	public void startGame(String enemyName) {
+		enemy.setName(enemyName);
+		enemyGridLabel.setText(enemyName + "'S GRID");
 	}
 
 	public ArrayList<Ship> getShips() {
@@ -282,7 +285,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		return null;
 	}
 	
-	public void updateMap(ShipLocation guess, Result result) {
+	public void updateMap(ShipLocation guess, Result result, Faction factionAttacked) {
 		//TODO
 		System.out.println("Updated user map. Guess Location: " + guess + ". Result: " + result);
 	}

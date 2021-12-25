@@ -18,7 +18,6 @@ import justacommonguy.battleshipgui.gui.BattleshipGUI;
 import justacommonguy.battleshipgui.networking.NetworkComponent;
 import justacommonguy.battleshipgui.networking.Request;
 // TODO. Should send a message to the client if the game fails.
-// TODO. Implement the catch blocks for better handling.
 // ? Add WAN connection. https://res.infoq.com/articles/Java-7-Sockets-Direct-Protocol/en/resources/Fig2large.jpg
 public class GameServer implements Runnable, NetworkComponent {
 
@@ -28,6 +27,8 @@ public class GameServer implements Runnable, NetworkComponent {
 	
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
+	private ArrayList<Ship> hostShips = new ArrayList<Ship>();
+	private ArrayList<Ship> clientShips = new ArrayList<Ship>();
 	private AllyPlayer host;
 	private AllyPlayer client;
 
@@ -97,12 +98,12 @@ public class GameServer implements Runnable, NetworkComponent {
 			System.out.println("Requested client to send player info.");
 			client = (AllyPlayer) ois.readObject();
 			System.out.println("Received client's player info. Player: " + client);
-			gui.startGame(client);
+			gui.startGame(client.getName());
 
 			oos.writeObject(Request.START);
 			System.out.println("Requested client to start game.");
 			host = gui.getPlayer();
-			oos.writeObject(host);
+			oos.writeObject(host.getName());
 			System.out.println("Sent host info to client. Player: " + host);
 		}
 		catch (IOException | ClassNotFoundException e) {
@@ -117,19 +118,19 @@ public class GameServer implements Runnable, NetworkComponent {
 
 		// Host goes first if true.
 		if (random.nextBoolean()) {
-			while (!hostLocations.isEmpty() || !clientLocations.isEmpty()) {
+			while (!hostShips.isEmpty() || !clientShips.isEmpty()) {
 				hostAttack();
 				clientAttack();
 			}
 		}
 		else {
-			while (!hostLocations.isEmpty() || !clientLocations.isEmpty()) {
+			while (!hostShips.isEmpty() || !clientShips.isEmpty()) {
 				clientAttack();
 				hostAttack();
 			}
 		}
 
-		if (hostLocations.isEmpty()) {
+		if (hostShips.isEmpty()) {
 			winner = client.getName();
 		}
 
@@ -138,10 +139,10 @@ public class GameServer implements Runnable, NetworkComponent {
 	
 	@SuppressWarnings("unchecked")
 	private void unlockPlacing() {
-		hostLocations = gui.getShips();
+		hostShips = gui.getShips();
 		try {
 			oos.writeObject(Request.PLACE_SHIPS);
-			clientLocations = (ArrayList<Ship>) ois.readObject();
+			clientShips = (ArrayList<Ship>) ois.readObject();
 		} catch (ClassNotFoundException | IOException e) {
 			System.out.println("Failed to get client ships.");
 		}
@@ -150,28 +151,43 @@ public class GameServer implements Runnable, NetworkComponent {
 
 	private void hostAttack() {
 		ShipLocation guess = gui.getAttack();
-		updateLocations(guess, checkGuess(guess));
+		Result result = checkGuess(guess, clientShips);
+		updateLocations(guess, result, Faction.ENEMY);
+		try {
+			oos.writeObject(Request.ATTACK_RESULT);
+			oos.writeObject(guess);
+			oos.writeObject(result);
+			oos.writeObject(Faction.ALLY);
+		} catch (IOException e) {
+			System.out.println("Failed to send host guess.");
+		}
 	}
 
 	private void clientAttack() {
 		try {
 			oos.writeObject(Request.ATTACK);
 			ShipLocation guess = (ShipLocation) ois.readObject();
-			updateLocations(guess, checkGuess(guess));
+			Result result = checkGuess(guess, hostShips);
+
+			oos.writeObject(Request.ATTACK_RESULT);
+			oos.writeObject(guess);
+			oos.writeObject(result);
+			oos.writeObject(Faction.ENEMY);
+			updateLocations(guess, result, Faction.ALLY);
 		}
 		catch (ClassNotFoundException | IOException e) {
 			System.out.println("Failed to get client guess.");
 		}
 	}
 
-	private Result checkGuess(ShipLocation guess) {
+	private Result checkGuess(ShipLocation guess, ArrayList<Ship> shipList) {
 		Result result = Result.MISS;
 		loop:
-		for (Ship ship : clientLocations) {
+		for (Ship ship : shipList) {
 			result = ship.checkHit(guess);
 			switch (result) {
 				case KILL:
-					clientLocations.remove(ship);
+					shipList.remove(ship);
 				case HIT:
 					break loop;
 				case MISS: default:
@@ -181,12 +197,13 @@ public class GameServer implements Runnable, NetworkComponent {
 		return result;
 	}
 
-	private void updateLocations(ShipLocation guess, Result result) {
-		gui.updateMap(guess, result);
+	private void updateLocations(ShipLocation guess, Result result, Faction factionAttacked) {
+		gui.updateMap(guess, result, factionAttacked);
 		try {
 			oos.writeObject(Request.ATTACK_RESULT);
 			oos.writeObject(guess);
 			oos.writeObject(result);
+			oos.writeObject(factionAttacked);
 		} catch (IOException e) {
 			System.out.println("Failed to send attack result.");
 		}
