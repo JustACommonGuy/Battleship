@@ -12,8 +12,7 @@ import java.util.Properties;
 
 public class Settings {
 
-	private Properties properties = new Properties();
-	private File file;
+	public static Settings gameSettings = new Settings(new File("settings.properties"));
 
 	private static final String SERVER_PORT = "1337";
 	private static final String IP_ADDRESS = "";
@@ -24,7 +23,10 @@ public class Settings {
 	private static final String SHIP = "173,173,173";
 	private static final String HIT = "200,100,30";
 	private static final String KILL = "150,30,30";
-
+	
+	private Properties properties = new Properties();
+	private File file;
+	
 	public Settings(File file) {
 		this.file = file;
 		while (true) {

@@ -1,5 +1,8 @@
 package justacommonguy.battleshipgui.gui;
 
+import static justacommonguy.battleshipgui.GameServer.gameServer;
+import static justacommonguy.battleshipgui.Settings.gameSettings;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
@@ -28,33 +31,31 @@ import javax.swing.JTextField;
 import justacommonguy.battleshipgui.AllyPlayer;
 import justacommonguy.battleshipgui.EnemyPlayer;
 import justacommonguy.battleshipgui.Faction;
-import static justacommonguy.battleshipgui.GameLauncher.gameServer;
-import static justacommonguy.battleshipgui.GameLauncher.gameSettings;
 import justacommonguy.battleshipgui.Player;
 import justacommonguy.battleshipgui.Result;
 import justacommonguy.battleshipgui.Ship;
-import justacommonguy.battleshipgui.networking.Request;
 import justacommonguy.battleshipgui.ShipLocation;
 import justacommonguy.battleshipgui.networking.NetworkComponent;
+import justacommonguy.battleshipgui.networking.Request;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
 // !Should keep this in mind: https://www.oracle.com/java/technologies/javase/codeconventions-fileorganization.html#1852
 // TODO. Add better exception handling
 // TODO. Add better logging
+//? Add a counter of guesses?
 public class BattleshipGUI implements GUI, NetworkComponent {
 
-	public AllyPlayer player;
-	public Player<EnemyCell> enemy;
-	private ObjectInputStream ois;
-	private ObjectOutputStream oos;
-
-	//? Add a counter of guesses?
-
+	public static BattleshipGUI gameGUI;
 	public static final double Y_RESOLUTION = 
 			Toolkit.getDefaultToolkit().getScreenSize().getHeight();
 	public static final double X_RESOLUTION =
 			Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+	
+	public AllyPlayer player;
+	public Player<EnemyCell> enemy;
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
 
 	private JFrame frame = new JFrame();
 	private JPanel playerMap;
@@ -64,7 +65,6 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	private JPanel buttonPanel;
 	private JButton hostButton;
 	private JButton joinButton;
-
 
 	public BattleshipGUI(String hostUsername) {
 		//TODO

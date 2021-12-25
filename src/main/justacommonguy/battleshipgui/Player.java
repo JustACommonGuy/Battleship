@@ -1,5 +1,7 @@
 package justacommonguy.battleshipgui;
 
+import static justacommonguy.battleshipgui.Settings.gameSettings;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -12,7 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import static justacommonguy.battleshipgui.GameLauncher.gameSettings;
 import justacommonguy.battleshipgui.gui.BattleshipGUI;
 import justacommonguy.battleshipgui.gui.Cell;
 import justacommonguy.battleshipgui.gui.HighlightInitiator;

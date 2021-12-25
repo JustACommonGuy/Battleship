@@ -1,5 +1,10 @@
 package justacommonguy.battleshipgui;
 
+import static justacommonguy.battleshipgui.Settings.gameSettings;
+import static justacommonguy.battleshipgui.gui.BattleshipGUI.gameGUI;
+
+import com.formdev.flatlaf.intellijthemes.FlatSpacegrayIJTheme;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,12 +14,12 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JFrame;
+import javax.swing.UIManager;
 
-import static justacommonguy.battleshipgui.GameLauncher.gameGUI;
-import static justacommonguy.battleshipgui.GameLauncher.gameSettings;
 import justacommonguy.battleshipgui.gui.BattleshipGUI;
 import justacommonguy.battleshipgui.networking.NetworkComponent;
 import justacommonguy.battleshipgui.networking.Request;
+
 // TODO. Should send a message to the client if the game fails.
 // ? Add WAN connection. https://res.infoq.com/articles/Java-7-Sockets-Direct-Protocol/en/resources/Fig2large.jpg
 public class GameServer implements Runnable, NetworkComponent {
@@ -25,6 +30,18 @@ public class GameServer implements Runnable, NetworkComponent {
 	private ArrayList<Ship> clientShips = new ArrayList<Ship>();
 	private AllyPlayer host;
 	private AllyPlayer client;
+	public static GameServer gameServer = new GameServer();
+
+	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel(new FlatSpacegrayIJTheme());
+		}
+		catch (Exception ex) {
+			System.out.println("Failed to set LaF");
+		}
+	
+		gameServer.start(args);
+	}
 
 	public void start(String[] args) {
 		String hostUsername = null;
