@@ -28,10 +28,8 @@ public class GameServer implements Runnable, NetworkComponent {
 	
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
-	private ArrayList<Ship> hostLocations = new ArrayList<Ship>();
-	private ArrayList<Ship> clientLocations = new ArrayList<Ship>();
-	private ClientPlayer host;
-	private Player client;
+	private AllyPlayer host;
+	private AllyPlayer client;
 
 	public static void main(String[] args) {
 		try {
@@ -97,7 +95,7 @@ public class GameServer implements Runnable, NetworkComponent {
 		try {
 			oos.writeObject(Request.SEND_PLAYER);
 			System.out.println("Requested client to send player info.");
-			client = (Player) ois.readObject();
+			client = (AllyPlayer) ois.readObject();
 			System.out.println("Received client's player info. Player: " + client);
 			gui.startGame(client);
 

@@ -3,7 +3,6 @@ package justacommonguy.battleshipgui;
 import java.util.ArrayList;
 
 import justacommonguy.battleshipgui.gui.AllyCell;
-import justacommonguy.battleshipgui.gui.BattleshipGUI;
 
 public class Ship {
 
@@ -13,7 +12,7 @@ public class Ship {
 	}
 
 	/** String array for all ship names. The order must match with 
-	 * {@link justacommonguy.battleshipgui.gui.BattleshipGUI#SHIP_SIZES SHIP_SIZES}. 
+	 * {@link justacommonguy.battleshipgui.AllyPlayer#SHIP_SIZES SHIP_SIZES}. 
 	 * Submarine is not used since that would overcomplicate toString().*/
 	private static final String[] SHIP_NAMES = 
 			{"Destroyer", "Cruiser", "Submarine", "Battleship", "Carrier"};
@@ -22,8 +21,8 @@ public class Ship {
 	private int size;
 
 	public Ship(ArrayList<ShipLocation> locations) {
-		if ((locations.size() < BattleshipGUI.SHIP_SIZES[0]) || 
-				(locations.size() > BattleshipGUI.SHIP_SIZES[BattleshipGUI.SHIP_SIZES.length-1])) {
+		if ((locations.size() < AllyPlayer.SHIP_SIZES[0]) || 
+				(locations.size() > AllyPlayer.SHIP_SIZES[AllyPlayer.SHIP_SIZES.length-1])) {
 			throw new IllegalArgumentException("Ship's size is out of bounds.");
 		}
 		this.locations = locations;
@@ -32,8 +31,8 @@ public class Ship {
 
 	@Override
 	public String toString() {
-		for (int i = 0; i < BattleshipGUI.SHIP_SIZES.length; i++) {
-			if (size == BattleshipGUI.SHIP_SIZES[i]) {
+		for (int i = 0; i < AllyPlayer.SHIP_SIZES.length; i++) {
+			if (size == AllyPlayer.SHIP_SIZES[i]) {
 				return SHIP_NAMES[i];
 			}
 		}
@@ -45,22 +44,21 @@ public class Ship {
 			throw new IllegalArgumentException("OldLoc does not match with Ship's old location.");
 		}
 		
-		int xIncrement = newLoc.getX() - oldLoc.getX();
-		int yIncrement = newLoc.getY() - oldLoc.getY();
+		int xChange = newLoc.getX() - oldLoc.getX();
+		int yChange = newLoc.getY() - oldLoc.getY();
 		ArrayList<ShipLocation> newLocations = new ArrayList<ShipLocation>();
 
 		//// System.out.println("");
-		for (ShipLocation location : locations) {
+		for (ShipLocation loc : locations) {
 			ShipLocation updatedLocation = null;
 			try {
-				updatedLocation = new ShipLocation(location.getX() + xIncrement, 
-						location.getY() + yIncrement);
+				updatedLocation = new ShipLocation(loc.getX() + xChange, loc.getY() + yChange);
 			}
 			catch (IllegalArgumentException e) {
 				return null;
 			}
 
-			AllyCell targetCell = (AllyCell) GameServer.gui.getCell(updatedLocation, Faction.ALLY);
+			AllyCell targetCell = GameServer.gui.player.getCell(updatedLocation);
 			if (targetCell != null) {
 				//// System.out.println("New location of " + this + ": " + updatedLocation);
 				newLocations.add(updatedLocation);
