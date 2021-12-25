@@ -66,7 +66,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	private JButton hostButton;
 	private JButton joinButton;
 
-	public BattleshipGUI(String hostUsername) {
+	private BattleshipGUI(String hostUsername) {
 		//TODO
 
 		if (gameSettings.getSetting("username").equals("")) {
@@ -78,6 +78,13 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		}
 		player = new AllyPlayer(gameSettings.getSetting("username"));
 		enemy = new EnemyPlayer("OPPONENT");
+	}
+
+	public static BattleshipGUI getInstance(String hostUsername) {
+		if (gameGUI == null) {
+			gameGUI = new BattleshipGUI(hostUsername);
+		}
+		return gameGUI;
 	}
 
 	public String askName() {

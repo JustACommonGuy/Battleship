@@ -24,13 +24,14 @@ import justacommonguy.battleshipgui.networking.Request;
 // ? Add WAN connection. https://res.infoq.com/articles/Java-7-Sockets-Direct-Protocol/en/resources/Fig2large.jpg
 public class GameServer implements Runnable, NetworkComponent {
 
+	public static GameServer gameServer = getInstance();
+
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 	private ArrayList<Ship> hostShips = new ArrayList<Ship>();
 	private ArrayList<Ship> clientShips = new ArrayList<Ship>();
 	private AllyPlayer host;
 	private AllyPlayer client;
-	public static GameServer gameServer = new GameServer();
 
 	public static void main(String[] args) {
 		try {
@@ -43,12 +44,21 @@ public class GameServer implements Runnable, NetworkComponent {
 		gameServer.start(args);
 	}
 
+	private GameServer() {}
+
+	public static GameServer getInstance() {
+		if (gameServer == null) {
+			gameServer = new GameServer();
+		}
+		return gameServer;
+	}
+
 	public void start(String[] args) {
 		String hostUsername = null;
 		if (args.length != 0) {
 			hostUsername = args[0];
 		}
-		gameGUI = new BattleshipGUI(hostUsername);
+		gameGUI = BattleshipGUI.getInstance(hostUsername);
 		gameGUI.start(JFrame.EXIT_ON_CLOSE);
 	}
 
