@@ -41,6 +41,7 @@ import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
 // !Should keep this in mind: https://www.oracle.com/java/technologies/javase/codeconventions-fileorganization.html#1852
+// !Move stuff somewhere else to avoid violating single responsibility
 // TODO. Add better exception handling
 // TODO. Add better logging
 //? Add a counter of guesses?
@@ -52,6 +53,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	public static final double X_RESOLUTION =
 			Toolkit.getDefaultToolkit().getScreenSize().getWidth();
 	
+	// ?Maybe player should be in GameServer
 	public AllyPlayer player;
 	public Player<EnemyCell> enemy;
 	private ObjectInputStream ois;
@@ -116,7 +118,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		playerMap = player.makeMap();
 		enemyMap = enemy.makeMap();
 		JLabel gridLabel = new JLabel("YOUR GRID");
-		enemyGridLabel = new JLabel(enemy.getName() + "'S GRID");
+		enemyGridLabel = new JLabel(enemy + "'S GRID");
 		gridLabel.setFont(bold);
 		enemyGridLabel.setFont(bold);
 
@@ -257,7 +259,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 					System.out.println("Sending ships.");
 					return getShips();
 				case SEND_PLAYER:
-					System.out.println("Sending " + player.getName());
+					System.out.println("Sending " + player);
 					return getPlayer();
 				case START:
 					startGame((String) ois.readObject());

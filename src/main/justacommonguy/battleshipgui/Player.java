@@ -136,6 +136,9 @@ public abstract class Player<T extends Cell> implements Serializable {
 	}
 
 	public void setName(String name) {
+		if ((name == null) || (name.equals(""))) {
+			throw new IllegalArgumentException("Name must not be null or empty.");
+		}
 		this.name = name;
 	}
 }

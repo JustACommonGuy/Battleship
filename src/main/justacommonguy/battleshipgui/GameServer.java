@@ -40,7 +40,7 @@ public class GameServer implements Runnable, NetworkComponent {
 		catch (Exception ex) {
 			System.out.println("Failed to set LaF");
 		}
-	
+
 		gameServer.start(args);
 	}
 
@@ -189,7 +189,7 @@ public class GameServer implements Runnable, NetworkComponent {
 		}
 	}
 
-	private Result checkGuess(ShipLocation guess, ArrayList<Ship> shipList) {
+	private static Result checkGuess(ShipLocation guess, ArrayList<Ship> shipList) {
 		Result result = Result.MISS;
 		loop:
 		for (Ship ship : shipList) {

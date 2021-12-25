@@ -91,10 +91,13 @@ public class Ship {
 	}
 
 	public void setLocations(ArrayList<ShipLocation> locations) {
+		if (locations == null) {
+			throw new IllegalArgumentException("List must not be null");
+		}
 		this.locations = locations;
 	}
 
 	public ArrayList<ShipLocation> getLocations() {
-		return locations;
+		return new ArrayList<ShipLocation>(locations);
 	}
 }

@@ -12,18 +12,18 @@ import justacommonguy.battleshipgui.ShipLocation;
 
 public abstract class Cell extends JPanel implements MouseListener, HighlightListener {
 
-	public final static Color DEFAULT = new Color (35, 40, 48);
+	public static final Color DEFAULT = new Color (35, 40, 48);
 	protected Color oldColor = DEFAULT;
-	protected ShipLocation location;
+	protected final ShipLocation location;
 
 	private HighlightInitiator xInitiator;
 	private HighlightInitiator yInitiator;
 
 	public Cell(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit) {
 		super.addMouseListener(this);
+		this.location = location;
 		this.xInitiator = xInit;
 		this.yInitiator = yInit;
-		this.location = location;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -39,6 +39,9 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 	}
 
 	public void setCellColor(Color color) {
+		if (color == null) {
+			throw new IllegalArgumentException("Color must not be null.");
+		}
 		oldColor = color;
 		setBackground(color);
 	}
