@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
-import justacommonguy.battleshipgui.Faction;
-import justacommonguy.battleshipgui.GameServer;
+import static justacommonguy.battleshipgui.GameLauncher.gameGUI;
+import static justacommonguy.battleshipgui.GameLauncher.gameSettings;
 import justacommonguy.battleshipgui.Ship;
 import justacommonguy.battleshipgui.ShipLocation;
 
@@ -18,15 +18,15 @@ public class AllyCell extends Cell implements DragListener {
 	private static ArrayList<AllyCell> oldCellList;
 	private static Ship oldShip;
 
-	private static Color MISS_COLOR = GameServer.settings.getColor("ally_miss_color");
-	private static Color SHIP_COLOR = GameServer.settings.getColor("ally_ship_color");
-	private static Color HIT_COLOR = GameServer.settings.getColor("ally_hit_color");
-	private static Color KILL_COLOR = GameServer.settings.getColor("ally_kill_color");
+	private static final Color MISS_COLOR = gameSettings.getColor("ally_miss_color");
+	private static final Color SHIP_COLOR = gameSettings.getColor("ally_ship_color");
+	private static final Color HIT_COLOR = gameSettings.getColor("ally_hit_color");
+	private static final Color KILL_COLOR = gameSettings.getColor("ally_kill_color");
 
 	private Ship ship;
 
-	public AllyCell(ShipLocation location, HighlightInitiator xInitiator, HighlightInitiator yInitiator) {
-		super(location, xInitiator, yInitiator);
+	public AllyCell(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit) {
+		super(location, xInit, yInit);
 	}
 
 	public void setShip(Ship ship) {

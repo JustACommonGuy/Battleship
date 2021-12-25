@@ -12,17 +12,21 @@ import java.util.Properties;
 
 public class Settings {
 
+	public static Settings gameSettings = new Settings(new File("settings.properties"));
+
+	private static final String SERVER_PORT = "1337";
+	private static final String IP_ADDRESS = "";
+	private static final String CONNECTION_PORT = "";
+	private static final String COLUMN_NUMBERS = "false";
+	private static final String GRID_GAP = "0";
+	private static final String MISS = "0,0,0";
+	private static final String SHIP = "173,173,173";
+	private static final String HIT = "200,100,30";
+	private static final String KILL = "150,30,30";
+	
 	private Properties properties = new Properties();
 	private File file;
-
-	private static String SERVER_PORT = "1337";
-	private static String IP_ADDRESS = "";
-	private static String CONNECTION_PORT = "";
-	private static String MISS = "0,0,0";
-	private static String SHIP = "173,173,173";
-	private static String HIT = "200,100,30";
-	private static String KILL = "150,30,30";
-
+	
 	public Settings(File file) {
 		this.file = file;
 		while (true) {
@@ -39,6 +43,7 @@ public class Settings {
 		}
 	}
 
+	/** New settings are added here as well. */ 
 	public void loadDefaultSettings() {
 
 		properties.setProperty("username", "");
@@ -46,6 +51,9 @@ public class Settings {
 		properties.setProperty("default_ip_address", IP_ADDRESS);
 		properties.setProperty("default_port", CONNECTION_PORT);
 		
+		properties.setProperty("column_numbers", COLUMN_NUMBERS);
+		properties.setProperty("grid_gap", GRID_GAP);
+
 		properties.setProperty("enemy_miss_color", MISS);
 		properties.setProperty("enemy_ship_color", SHIP);
 		properties.setProperty("enemy_hit_color", HIT);
