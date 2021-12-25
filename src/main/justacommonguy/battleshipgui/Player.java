@@ -12,6 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import static justacommonguy.battleshipgui.GameLauncher.gameSettings;
 import justacommonguy.battleshipgui.gui.BattleshipGUI;
 import justacommonguy.battleshipgui.gui.Cell;
 import justacommonguy.battleshipgui.gui.HighlightInitiator;
@@ -22,11 +23,11 @@ public abstract class Player<T extends Cell> implements Serializable {
 	public static final int HEIGHT = 11;
 	public static final int WIDTH = 11;
 
-	private static final int GRID_GAP = Integer.parseInt(GameServer.settings.getSetting("grid_gap"));
+	private static final int GRID_GAP = Integer.parseInt(gameSettings.getSetting("grid_gap"));
 	/** GridLayout does not allow for specific cell sizes, so we set a global
 		size to display squared cells. */
-	private static final Dimension PANEL_SIZE = 
-			new Dimension(((int) BattleshipGUI.Y_RESOLUTION / 3), (int) (BattleshipGUI.Y_RESOLUTION / 3));
+	private static final Dimension PANEL_SIZE = new Dimension(
+			((int) BattleshipGUI.Y_RESOLUTION / 3), (int) (BattleshipGUI.Y_RESOLUTION / 3));
 
 	protected String name;
 	protected HashMap<ShipLocation, T> cellList = new HashMap<ShipLocation, T>();
@@ -84,7 +85,7 @@ public abstract class Player<T extends Cell> implements Serializable {
 		
 		//!
 		char columnChar = 'A';
-		if (Boolean.parseBoolean(GameServer.settings.getSetting("column_numbers"))) {
+		if (Boolean.parseBoolean(gameSettings.getSetting("column_numbers"))) {
 			columnChar = '1';
 		}
 		int rowNumber = 1;
@@ -135,9 +136,5 @@ public abstract class Player<T extends Cell> implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getName() {
-		return name;
 	}
 }

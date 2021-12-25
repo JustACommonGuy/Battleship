@@ -28,8 +28,8 @@ import javax.swing.JTextField;
 import justacommonguy.battleshipgui.AllyPlayer;
 import justacommonguy.battleshipgui.EnemyPlayer;
 import justacommonguy.battleshipgui.Faction;
-// ? Might want to make the import static
-import justacommonguy.battleshipgui.GameServer;
+import static justacommonguy.battleshipgui.GameLauncher.gameServer;
+import static justacommonguy.battleshipgui.GameLauncher.gameSettings;
 import justacommonguy.battleshipgui.Player;
 import justacommonguy.battleshipgui.Result;
 import justacommonguy.battleshipgui.Ship;
@@ -69,14 +69,14 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	public BattleshipGUI(String hostUsername) {
 		//TODO
 
-		if (GameServer.settings.getSetting("username").equals("")) {
+		if (gameSettings.getSetting("username").equals("")) {
 			if (hostUsername == null) {
 				hostUsername = askName();
 			}
-			GameServer.settings.setSetting("username", hostUsername);
-			GameServer.settings.saveSettings();
+			gameSettings.setSetting("username", hostUsername);
+			gameSettings.saveSettings();
 		}
-		player = new AllyPlayer(GameServer.settings.getSetting("username"));
+		player = new AllyPlayer(gameSettings.getSetting("username"));
 		enemy = new EnemyPlayer("OPPONENT");
 	}
 
@@ -155,7 +155,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// The server would be stuck waiting, so the GUI goes crazy if I call it directly. 
-			Thread hostThread = new Thread(GameServer.server);
+			Thread hostThread = new Thread(gameServer);
 			hostThread.start();
 		}
 	}
@@ -174,10 +174,10 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 			info.setAlignmentX(Component.CENTER_ALIGNMENT);
 			JTextField addressField = new JTextField();
 			addressField.putClientProperty("JTextField.placeholderText", "IP Address");
-			addressField.setText(GameServer.settings.getSetting("default_ip_address"));
+			addressField.setText(gameSettings.getSetting("default_ip_address"));
 			JTextField portField = new JTextField();
 			portField.putClientProperty("JTextField.placeholderText", "Port");
-			portField.setText(GameServer.settings.getSetting("default_port"));
+			portField.setText(gameSettings.getSetting("default_port"));
 			JCheckBox saveInfoCheck = new JCheckBox("Save to default settings", true);
 			
 			JPanel panel = new JPanel();
@@ -191,9 +191,9 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (option == JOptionPane.OK_OPTION) {
 				if (saveInfoCheck.isSelected()) {
-					GameServer.settings.setSetting("default_ip_address", addressField.getText());
-					GameServer.settings.setSetting("default_port", portField.getText());
-					GameServer.settings.saveSettings();
+					gameSettings.setSetting("default_ip_address", addressField.getText());
+					gameSettings.setSetting("default_port", portField.getText());
+					gameSettings.saveSettings();
 				}
 				joinGame(addressField.getText(), Integer.parseInt(portField.getText()));
 			}

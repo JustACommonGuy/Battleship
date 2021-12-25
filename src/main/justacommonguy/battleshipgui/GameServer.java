@@ -1,8 +1,5 @@
 package justacommonguy.battleshipgui;
 
-import com.formdev.flatlaf.intellijthemes.FlatSpacegrayIJTheme;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,8 +9,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JFrame;
-import javax.swing.UIManager;
 
+import static justacommonguy.battleshipgui.GameLauncher.gameGUI;
+import static justacommonguy.battleshipgui.GameLauncher.gameSettings;
 import justacommonguy.battleshipgui.gui.BattleshipGUI;
 import justacommonguy.battleshipgui.networking.NetworkComponent;
 import justacommonguy.battleshipgui.networking.Request;
@@ -21,10 +19,6 @@ import justacommonguy.battleshipgui.networking.Request;
 // ? Add WAN connection. https://res.infoq.com/articles/Java-7-Sockets-Direct-Protocol/en/resources/Fig2large.jpg
 public class GameServer implements Runnable, NetworkComponent {
 
-	public static Settings settings = new Settings(new File("settings.properties"));
-	public static GameServer server;
-	public static BattleshipGUI gui;
-	
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 	private ArrayList<Ship> hostShips = new ArrayList<Ship>();
@@ -32,30 +26,18 @@ public class GameServer implements Runnable, NetworkComponent {
 	private AllyPlayer host;
 	private AllyPlayer client;
 
-	public static void main(String[] args) {
-		try {
-			UIManager.setLookAndFeel(new FlatSpacegrayIJTheme());
-		}
-		catch (Exception ex) {
-			System.out.println("Failed to set LaF");
-		}
-
-		server = new GameServer();
-		server.start(args);
-	}
-
 	public void start(String[] args) {
 		String hostUsername = null;
 		if (args.length != 0) {
 			hostUsername = args[0];
 		}
-		gui = new BattleshipGUI(hostUsername);
-		gui.start(JFrame.EXIT_ON_CLOSE);
+		gameGUI = new BattleshipGUI(hostUsername);
+		gameGUI.start(JFrame.EXIT_ON_CLOSE);
 	}
 
 	public void hostGame() {
 		try (ServerSocket serverSocket = new ServerSocket(
-				Integer.parseInt(settings.getSetting("server_port")))) {
+				Integer.parseInt(gameSettings.getSetting("server_port")))) {
 			System.out.println("Waiting for connection.");
 			Socket clientSocket = null;
 			clientSocket = serverSocket.accept();
@@ -98,12 +80,12 @@ public class GameServer implements Runnable, NetworkComponent {
 			System.out.println("Requested client to send player info.");
 			client = (AllyPlayer) ois.readObject();
 			System.out.println("Received client's player info. Player: " + client);
-			gui.startGame(client.getName());
+			gameGUI.startGame(client.toString());
 
 			oos.writeObject(Request.START);
 			System.out.println("Requested client to start game.");
-			host = gui.getPlayer();
-			oos.writeObject(host.getName());
+			host = gameGUI.getPlayer();
+			oos.writeObject(host.toString());
 			System.out.println("Sent host info to client. Player: " + host);
 		}
 		catch (IOException | ClassNotFoundException e) {
@@ -114,7 +96,7 @@ public class GameServer implements Runnable, NetworkComponent {
 
 	private void play() {
 		Random random = new Random();
-		String winner = host.getName();
+		String winner = host.toString();
 
 		// Host goes first if true.
 		if (random.nextBoolean()) {
@@ -131,7 +113,7 @@ public class GameServer implements Runnable, NetworkComponent {
 		}
 
 		if (hostShips.isEmpty()) {
-			winner = client.getName();
+			winner = client.toString();
 		}
 
 		finish(winner);
@@ -139,7 +121,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	
 	@SuppressWarnings("unchecked")
 	private void unlockPlacing() {
-		hostShips = gui.getShips();
+		hostShips = gameGUI.getShips();
 		try {
 			oos.writeObject(Request.PLACE_SHIPS);
 			clientShips = (ArrayList<Ship>) ois.readObject();
@@ -150,7 +132,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	private void hostAttack() {
-		ShipLocation guess = gui.getAttack();
+		ShipLocation guess = gameGUI.getAttack();
 		Result result = checkGuess(guess, clientShips);
 		updateLocations(guess, result, Faction.ENEMY);
 		try {
@@ -198,7 +180,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	private void updateLocations(ShipLocation guess, Result result, Faction factionAttacked) {
-		gui.updateMap(guess, result, factionAttacked);
+		gameGUI.updateMap(guess, result, factionAttacked);
 		try {
 			oos.writeObject(Request.ATTACK_RESULT);
 			oos.writeObject(guess);
@@ -210,7 +192,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	public void finish(String winner) {
-		gui.finish(winner);
+		gameGUI.finish(winner);
 		try {
 			oos.writeObject(Request.FINISH);
 			oos.writeObject(winner);

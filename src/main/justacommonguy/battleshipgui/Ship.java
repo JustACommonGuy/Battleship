@@ -58,7 +58,7 @@ public class Ship {
 				return null;
 			}
 
-			AllyCell targetCell = GameServer.gui.player.getCell(updatedLocation);
+			AllyCell targetCell = GameLauncher.gameGUI.player.getCell(updatedLocation);
 			if (targetCell != null) {
 				//// System.out.println("New location of " + this + ": " + updatedLocation);
 				newLocations.add(updatedLocation);
