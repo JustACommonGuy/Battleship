@@ -84,7 +84,7 @@ public class AllyPlayer extends Player<AllyCell> {
 			throw new RandomShipFailure("Could not generate random ship.");
 		}
 
-		System.out.println("Size of ship: " + locations.size());
+		//// System.out.println("Size of ship: " + locations.size());
 		return new Ship(locations);
 	}
 

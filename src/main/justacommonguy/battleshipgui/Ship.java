@@ -40,7 +40,7 @@ public class Ship {
 		return null;
 	}
 
-	public ArrayList<ShipLocation> getNewLocations(ShipLocation oldLoc, ShipLocation newLoc) {
+	public ArrayList<ShipLocation> getDraggedLocations(ShipLocation oldLoc, ShipLocation newLoc) {
 		if (!locations.contains(oldLoc)) {
 			throw new IllegalArgumentException("OldLoc does not match with Ship's old location.");
 		}
@@ -54,22 +54,39 @@ public class Ship {
 			ShipLocation updatedLocation = null;
 			try {
 				updatedLocation = new ShipLocation(loc.getX() + xChange, loc.getY() + yChange);
-			}
-			catch (IllegalArgumentException e) {
-				return null;
-			}
-
-			AllyCell targetCell = BattleshipGUI.gameGUI.player.getCell(updatedLocation);
-			if (targetCell != null) {
-				//// System.out.println("New location of " + this + ": " + updatedLocation);
 				newLocations.add(updatedLocation);
 			}
-			else {
+			catch (IllegalArgumentException e) {
+				//// System.out.println("Could not generate new locations. Negative coords.");
 				return null;
 			}
 		}
 		
 		return newLocations;
+	}
+
+	public ArrayList<ShipLocation> getRotatedLocations(int direction, ShipLocation center) {
+		if (!locations.contains(center)) {
+			throw new IllegalArgumentException("OldLoc does not match with Ship's old location.");
+		}
+		
+		//// System.out.println("");
+		try {
+			ArrayList<ShipLocation> newLocations = new ArrayList<ShipLocation>();
+			for (ShipLocation loc : locations) {
+				int xChange = loc.getX() - center.getX();
+				int yChange = loc.getY() - center.getY();
+
+				ShipLocation newLocation = new ShipLocation(center.getX() - (direction * yChange), 
+						center.getY() + (direction * xChange));
+				newLocations.add(newLocation);
+				//// System.out.println("New Location: " + newLocation);
+			}
+			return newLocations;
+		}
+		catch (IllegalArgumentException | NullPointerException ex) {
+			return null;
+		}
 	}
 
 	public Result checkHit(ShipLocation attackedLocation) {

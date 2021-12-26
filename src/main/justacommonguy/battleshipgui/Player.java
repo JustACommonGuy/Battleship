@@ -41,15 +41,21 @@ public abstract class Player<T extends Cell> implements Serializable {
 
 	public T getCell(ShipLocation location) {
 		if (!cellList.containsKey(location)) {
-			System.out.println("Ouch. " + location);
+			//// System.out.println("Ouch. " + location);
 		}
 		return cellList.get(location);
 	}
 
 	public ArrayList<T> getCellList(ArrayList<ShipLocation> locationList) {
+		if (locationList == null) {
+			return null;
+		}
 		ArrayList<T> cellList = new ArrayList<T>();
 		
 		for (ShipLocation location : locationList) {
+			if (getCell(location) == null) {
+				return null;
+			}
 			cellList.add(getCell(location));
 		}
 		

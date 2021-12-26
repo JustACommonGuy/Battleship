@@ -20,7 +20,7 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 	private HighlightInitiator yInitiator;
 
 	public Cell(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit) {
-		super.addMouseListener(this);
+		addMouseListener(this);
 		this.location = location;
 		this.xInitiator = xInit;
 		this.yInitiator = yInit;
