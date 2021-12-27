@@ -12,13 +12,10 @@ import java.util.ArrayList;
 import justacommonguy.battleshipgui.Ship;
 import justacommonguy.battleshipgui.ShipLocation;
 
-public class AllyCell extends Cell implements DragListener, MouseWheelListener {
+public class AllyCell extends Cell implements MouseWheelListener {
 
-	private static DragInitiator dragInitiator = new DragInitiator();
 	private static boolean placementAllowed = true;
-	private static AllyCell oldCell;
-	private static ArrayList<AllyCell> oldCellList;
-	private static Ship oldShip;
+	private static ShipMover mover;
 
 	private static final Color MISS_COLOR = gameSettings.getColor("ally_miss_color");
 	private static final Color SHIP_COLOR = gameSettings.getColor("ally_ship_color");
@@ -34,46 +31,31 @@ public class AllyCell extends Cell implements DragListener, MouseWheelListener {
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (placementAllowed && (ship != null)) {
-			setOldCell();
+			mover = new ShipMover(this);
 		}
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		super.mouseEntered(e);
-		if (placementAllowed) {
-			dragInitiator.setDragListener(this);
-			if (oldCell != null) {
-				dragInitiator.dragging();
-			}
+		if (placementAllowed && mover != null) {
+			mover.setNewLocation(location);
+			mover.drag();
 		}
 	}
 
-	@Override
-	public void draggingShip() {
-		if (oldCell == null) {
-			throw new NullPointerException("Static oldCell is null.");
-		}
-		ArrayList<ShipLocation> newLocations = oldShip.getDraggedLocations(
-				oldCell.getShipLocation(), super.location);
-		
-		if (newLocations != null) {
-			ArrayList<AllyCell> newCells = gameGUI.player.getCellList(newLocations);
-			if (newCells != null) {
-				for (AllyCell newCell : newCells) {
-					newCell.highlightPlaceholder(SHIP_COLOR);
-				}
-			}
-		}
+	public void mouseEntered() {
+		super.mouseEntered(null);
 	}
 
 	/** Temporary highlighting when the ship is being dragged. */
-	public void highlightPlaceholder(Color color) {
+	public void highlightDragging() {
+		Color color = SHIP_COLOR;
 		int increment = fixIncrement(-50, color);
 		color = new Color(color.getRed() + increment, color.getGreen() + increment, 
 				color.getBlue() + increment);
 
-		boolean isOwnShip = hasOldShip();
+		boolean isOwnShip = false;
 		if ((oldColor != DEFAULT) && (isOwnShip == false)) {
 			setBackground(KILL_COLOR);
 		}
@@ -84,59 +66,19 @@ public class AllyCell extends Cell implements DragListener, MouseWheelListener {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		if (placementAllowed) {
-			if (oldCell != null) {
-				dragInitiator.dragged();
-			}
+		if (placementAllowed && mover != null) {
+			mover.drop();
+			mover = null;
 		}
-	}
-
-	@Override
-	public void shipDragged() {
-		if (oldCell == null) {
-			throw new NullPointerException("Static oldCell is null.");
-		}
-		if (oldCell == this) {
-			return;
-		}
-
-		ArrayList<ShipLocation> newLocations = oldShip.getDraggedLocations(
-				oldCell.getShipLocation(), super.location);
-		
-		moveShip(newLocations);
-	}
-
-	private void moveShip(ArrayList<ShipLocation> newLocations) {
-		ArrayList<AllyCell> newCells = gameGUI.player.getCellList(newLocations);
-		boolean placementValid = true;
-		// This already checks if the arraylist is null.
-		if (!areCellsValid(newCells)) {
-			placementValid = false;
-		}
-		
-		if (placementValid) {
-			Ship oldShip = AllyCell.oldShip;
-			removeOldShip();
-			for (AllyCell newCell : newCells) {
-				newCell.setShip(oldShip);
-			}
-			oldShip.setLocations(newLocations);
-		}
-
-		if (!placementValid) {
-			removeOldCell();
-		}
-		super.mouseEntered(null);
 	}
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (placementAllowed && (ship != null)) {
-			setOldCell();
-			// Direction must have an absolute value of 1.
+			mover = new ShipMover(this);
 			int direction = e.getWheelRotation() / Math.abs(e.getWheelRotation());
-			ArrayList<ShipLocation> newLocations = ship.getRotatedLocations(direction, location);
-			moveShip(newLocations);
+			mover.rotate(direction, location);
+			mover = null;
 		}
 	}
 	
@@ -152,24 +94,8 @@ public class AllyCell extends Cell implements DragListener, MouseWheelListener {
 		}
 	}
 
-	public void setOldCell() {
-		oldCell = this;
-		oldCellList = oldCell.getRelatedCells();
-		oldShip = oldCell.ship;
-	}
-
-	public void removeOldShip() {
-		for (AllyCell cell : oldCellList) {
-			cell.setShip(null);
-		}
-		removeOldCell();
-	}
-
-	/** Get rid of the static variables when transition is done. */
-	public static void removeOldCell() {
-		oldCell = null;
-		oldCellList = null;
-		oldShip = null;
+	public Ship getShip() {
+		return ship;
 	}
 
 	/** Get cells that share the same ship. */
@@ -180,40 +106,13 @@ public class AllyCell extends Cell implements DragListener, MouseWheelListener {
 		return gameGUI.player.getCellList(ship.getLocations());
 	}
 
-	/** Placement is not valid if new locations are out of bounds (negative coords or not found), 
-	* or if the cells are already occupied. */
-	public static boolean areCellsValid(ArrayList<AllyCell> cells) {
-		boolean isValid = true;
-		if (cells == null) {
-			return false;
-		}
-
-		for (AllyCell cell : cells) {
-			if (cell.hasAnotherShip()) {
-				isValid = false;
-			}
-		}
-
-		return isValid;
-	}
-
 	/** We don't consider that it has a ship if it is the same that is being modified. */
-	public boolean hasAnotherShip() {
-		if (hasOldShip()) {
-			return false;
-		}
+	public boolean hasShip() {
 		return ship != null;
 	}
 
-	public boolean hasOldShip() {
-		if (oldCellList != null) {
-			for (AllyCell cell : oldCellList) {
-				if (cell.equals(this)) {
-					return true;
-				}
-			}
-		}
-		return false;
+	public boolean hasShip(Ship ship) {
+		return this.ship == ship;
 	}
 
 	@Override

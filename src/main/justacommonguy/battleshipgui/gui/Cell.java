@@ -18,6 +18,7 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 
 	private HighlightInitiator xInitiator;
 	private HighlightInitiator yInitiator;
+	private boolean isHighlighted;
 
 	public Cell(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit) {
 		addMouseListener(this);
@@ -98,12 +99,14 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 	}
 
 	public void highlight(int increment) {
+		isHighlighted = true;
 		increment = fixIncrement(increment, oldColor);
 		setBackground(new Color(oldColor.getRed() + increment, oldColor.getGreen() + increment, 
 				oldColor.getBlue() + increment));
 	}
 
 	public void unhighlight() {
+		isHighlighted = false;
 		setBackground(oldColor);
 	}
 
@@ -119,6 +122,10 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 
 	public ShipLocation getShipLocation() {
 		return location;
+	}
+
+	public boolean isHighlighted() {
+		return isHighlighted;
 	}
 
 	abstract public Color getMissColor();

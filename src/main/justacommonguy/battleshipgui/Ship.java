@@ -2,9 +2,6 @@ package justacommonguy.battleshipgui;
 
 import java.util.ArrayList;
 
-import justacommonguy.battleshipgui.gui.AllyCell;
-import justacommonguy.battleshipgui.gui.BattleshipGUI;
-
 public class Ship {
 
 	public enum Axis {
