@@ -1,4 +1,4 @@
-package justacommonguy.battleshipgui;
+package justacommonguy.battleshipgui.config;
 
 import java.awt.Color;
 import java.io.BufferedReader;

@@ -1,4 +1,4 @@
-package justacommonguy.battleshipgui.gui;
+package justacommonguy.battleshipgui.cell;
 
 public interface HighlightListener {
 	

@@ -1,13 +1,13 @@
-package justacommonguy.battleshipgui.gui;
+package justacommonguy.battleshipgui.cell;
+
+import static justacommonguy.battleshipgui.BattleshipGUI.gameGUI;
 
 import java.util.ArrayList;
 
-import static justacommonguy.battleshipgui.gui.BattleshipGUI.gameGUI;
+import justacommonguy.battleshipgui.ship.Ship;
+import justacommonguy.battleshipgui.ship.ShipLocation;
 
-import justacommonguy.battleshipgui.Ship;
-import justacommonguy.battleshipgui.ShipLocation;
-
-public class ShipMover {
+class ShipMover {
 	
 	private ArrayList<AllyCell> oldCellList;
 	private Ship oldShip;
@@ -16,11 +16,13 @@ public class ShipMover {
 
 	public ShipMover(AllyCell oldCell) {
 		if (oldCell == null) {
-			throw new IllegalArgumentException("AllyCell cannot be null.");
+			throw new IllegalArgumentException("AllyCell must not be null.");
 		}
-		oldCellList = oldCell.getRelatedCells();
+		oldCellList = gameGUI.player.getRelatedCells(oldCell);
 		oldShip = oldCell.getShip();
 		this.oldLocation = oldCell.getShipLocation();
+		/* Unless otherwise stated, the ship does not move. */
+		newLocation = oldCell.getShipLocation();
 	}
 
 	public void drag() {
@@ -46,11 +48,11 @@ public class ShipMover {
 				oldLocation, newLocation);
 		
 		moveShip(newLocations);
-		gameGUI.player.getCell(newLocation).mouseEntered();
 	}
 
 	/** Rotates the ship around the center. Direction must have an absolute value of 1. */
 	public void rotate(int direction, ShipLocation center) {
+		setNewLocation(center);
 		ArrayList<ShipLocation> newLocations = oldShip.getRotatedLocations(direction, center);
 		moveShip(newLocations);
 	}
@@ -67,25 +69,30 @@ public class ShipMover {
 			updateShip(newLocations);
 		}
 		else {
-			new Thread(() -> {
-				for (AllyCell cell : oldCellList) {
-					cell.setBackground(cell.getKillColor());
-				}
-	
-				try {
-					Thread.sleep(300);
-				}
-				catch (InterruptedException e) {}
-	
-				for (AllyCell cell : oldCellList) {
-					boolean highlighted = cell.isHighlighted();
-					cell.unhighlight();
-					if (highlighted) {
-						cell.cellHighlighted();
-					}
-				}
-			}).start();
+			failureHighlight();
 		}
+		gameGUI.player.getCell(newLocation).highlightHover();
+	}
+
+	private void failureHighlight() {
+		new Thread(() -> {
+			for (AllyCell cell : oldCellList) {
+				cell.setCellColor(cell.getKillColor());
+			}
+
+			try {
+				Thread.sleep(300);
+			}
+			catch (InterruptedException e) {}
+
+			for (AllyCell cell : oldCellList) {
+				boolean highlighted = cell.isHighlighted();
+				cell.setCellColor(cell.getShipColor());
+				if (highlighted) {
+					cell.cellHighlighted();
+				}
+			}
+		}).start();
 	}
 
 	private void updateShip(ArrayList<ShipLocation> newLocations) {

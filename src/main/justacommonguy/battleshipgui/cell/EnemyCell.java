@@ -1,11 +1,11 @@
-package justacommonguy.battleshipgui.gui;
+package justacommonguy.battleshipgui.cell;
 
-import static justacommonguy.battleshipgui.Settings.gameSettings;
+import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 
-import justacommonguy.battleshipgui.ShipLocation;
+import justacommonguy.battleshipgui.ship.ShipLocation;
 
 public class EnemyCell extends Cell{
 

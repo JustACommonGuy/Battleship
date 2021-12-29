@@ -1,36 +1,96 @@
-package justacommonguy.battleshipgui;
+package justacommonguy.battleshipgui.ship;
 
 import java.util.ArrayList;
+import java.util.Random;
+
+import justacommonguy.battleshipgui.utils.Result;
 
 public class Ship {
 
-	public enum Axis {
+	private enum Axis {
 		X,
-		Y
+		Y,
 	}
 
 	/** String array for all ship names. The order must match with 
-	 * {@link justacommonguy.battleshipgui.AllyPlayer#SHIP_SIZES SHIP_SIZES}. 
+	 * {@link Ship#SHIP_SIZES SHIP_SIZES}. 
 	 * Submarine is not used since that would overcomplicate toString().*/
 	private static final String[] SHIP_NAMES = 
 			{"Destroyer", "Cruiser", "Submarine", "Battleship", "Carrier"};
+
+	/** Array for all ship sizes. The order must match with 
+	 * {@link Ship#SHIP_NAMES SHIP_NAMES}.*/
+	public static final int[] SHIP_SIZES = {2, 3, 3, 4, 5};
 	
 	private ArrayList<ShipLocation> locations = new ArrayList<ShipLocation>();
 	private int size;
 
-	public Ship(ArrayList<ShipLocation> locations) {
-		if ((locations.size() < AllyPlayer.SHIP_SIZES[0]) || 
-				(locations.size() > AllyPlayer.SHIP_SIZES[AllyPlayer.SHIP_SIZES.length-1])) {
+
+	private Ship(ArrayList<ShipLocation> locations) {
+		if ((locations.size() < SHIP_SIZES[0]) || 
+				(locations.size() > SHIP_SIZES[SHIP_SIZES.length - 1])) {
 			throw new IllegalArgumentException("Ship's size is out of bounds.");
 		}
 		this.locations = locations;
 		size = locations.size();
 	}
 
+	public static Ship getRandomShip(int shipSize, int height, int width) throws RandomShipFailure {
+		ArrayList<ShipLocation> locations = new ArrayList<ShipLocation>();
+		ShipLocation location = null;
+		int attemptsCount = 0;
+		boolean isSuccessful = false;
+		Axis axis = Axis.X;
+	
+		if (new Random().nextBoolean()) {
+			axis = Axis.Y;
+		}
+	
+		while (!isSuccessful && (attemptsCount++ < 3*height*width)) {
+			int x = (int) (Math.random() * (width -1) + 1);
+			int y = (int) (Math.random() * (height - 1) + 1);
+			location = new ShipLocation(x, y);
+	
+			int position = 0;
+			isSuccessful = true;
+			while (isSuccessful && (position++ < shipSize)) {
+				isSuccessful = true;
+				if ((x > (width - 1)) || (x < 0)) {
+					isSuccessful = false;
+				}
+				else if ((y > (height - 1)) || (y < 0)) {
+					isSuccessful = false;
+				}
+				
+				if (isSuccessful) {
+					locations.add(location);
+					switch (axis) {
+						case X:
+							location = new ShipLocation(++x, y);
+							break;
+						case Y:
+							location = new ShipLocation(x, ++y);
+							break;
+					}
+				}
+				else {
+					locations.clear();
+				}
+			}
+		}
+	
+		if (isSuccessful == false) {
+			throw new RandomShipFailure("Could not generate random ship.");
+		}
+	
+		//// System.out.println("Size of ship: " + locations.size());
+		return new Ship(locations);
+	}
+
 	@Override
 	public String toString() {
-		for (int i = 0; i < AllyPlayer.SHIP_SIZES.length; i++) {
-			if (size == AllyPlayer.SHIP_SIZES[i]) {
+		for (int i = 0; i < SHIP_SIZES.length; i++) {
+			if (size == SHIP_SIZES[i]) {
 				return SHIP_NAMES[i];
 			}
 		}
@@ -89,12 +149,9 @@ public class Ship {
 	public Result checkHit(ShipLocation attackedLocation) {
 		Result result = Result.MISS;
 
-		for (ShipLocation location : locations) {
-			if (location.equals(attackedLocation)) {
-				result = Result.HIT;
-				locations.remove(location);
-				break;
-			}
+		if (locations.contains(attackedLocation)) {
+			result = Result.HIT;
+			locations.remove(attackedLocation);
 		}
 
 		if (locations.isEmpty()) {

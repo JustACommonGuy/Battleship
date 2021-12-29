@@ -1,8 +1,8 @@
-package justacommonguy.battleshipgui;
+package justacommonguy.battleshipgui.ship;
 
 import java.io.Serializable;
 
-public class ShipLocation implements Serializable {
+public final class ShipLocation implements Serializable {
 	
 	private int x;
 	private int y;
@@ -11,7 +11,7 @@ public class ShipLocation implements Serializable {
 
 	public ShipLocation(int x, int y) {
 		if ((x <= 0) || (y <= 0)) {
-			throw new IllegalArgumentException("Arguments have to be positive integers.");
+			throw new IllegalArgumentException("Arguments must be positive integers.");
 		}
 		this.x = x;
 		this.y = y;

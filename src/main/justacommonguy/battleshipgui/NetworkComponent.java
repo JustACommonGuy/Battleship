@@ -1,4 +1,4 @@
-package justacommonguy.battleshipgui.networking;
+package justacommonguy.battleshipgui;
 
 public interface NetworkComponent {
 	

@@ -1,5 +1,5 @@
 package justacommonguy.battleshipgui;
 
-public class ComputerPlayer {
+public class GameLogic {
 	
 }

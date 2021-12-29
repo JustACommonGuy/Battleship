@@ -1,7 +1,7 @@
-package justacommonguy.battleshipgui.gui;
+package justacommonguy.battleshipgui;
 
 import static justacommonguy.battleshipgui.GameServer.gameServer;
-import static justacommonguy.battleshipgui.Settings.gameSettings;
+import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -28,20 +28,17 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import justacommonguy.battleshipgui.AllyPlayer;
-import justacommonguy.battleshipgui.EnemyPlayer;
-import justacommonguy.battleshipgui.Faction;
-import justacommonguy.battleshipgui.Player;
-import justacommonguy.battleshipgui.Result;
-import justacommonguy.battleshipgui.Ship;
-import justacommonguy.battleshipgui.ShipLocation;
-import justacommonguy.battleshipgui.networking.NetworkComponent;
-import justacommonguy.battleshipgui.networking.Request;
+import justacommonguy.battleshipgui.player.AllyPlayer;
+import justacommonguy.battleshipgui.player.EnemyPlayer;
+import justacommonguy.battleshipgui.ship.Ship;
+import justacommonguy.battleshipgui.ship.ShipLocation;
+import justacommonguy.battleshipgui.utils.Faction;
+import justacommonguy.battleshipgui.utils.Result;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
 // !Should keep this in mind: https://www.oracle.com/java/technologies/javase/codeconventions-fileorganization.html#1852
-// !Move stuff somewhere else to avoid violating single responsibility
+// !Move stuff somewhere else to avoid violating single responsibility. Make a separate class for game logic.
 // TODO. Add better exception handling
 // TODO. Add better logging
 //? Add a counter of guesses?
@@ -53,9 +50,10 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	public static final double X_RESOLUTION =
 			Toolkit.getDefaultToolkit().getScreenSize().getWidth();
 	
-	// ?Maybe player should be in GameServer
+	// ? Maybe player should be in GameLogic
 	public AllyPlayer player;
-	public Player<EnemyCell> enemy;
+	// ? Only the enemy's name might be needed
+	public EnemyPlayer enemy;
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 
@@ -101,6 +99,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		return (String) popup.getInputValue();
 	}
 
+	// ? Subdivide the method into several smaller GUI methods.
 	@Override
 	public void start(int closeOperation) {
 		//? Maybe disable close button so the player will quit appropiately.
@@ -156,7 +155,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		/* For reasons that humanity will never know, 
 		the dumb frame needs to be brought to the front when a popup appears. */
 		SwingUtils.frameToFront(frame);
-		player.placeShipsRandomly();
+		player.buildShips();
 	}
 
 	public class HostGameListener implements ActionListener {
@@ -264,8 +263,6 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 				case START:
 					startGame((String) ois.readObject());
 					break;
-				default:
-					throw new IOException();
 			}
 		}
 		catch (ClassNotFoundException | IOException e) {
@@ -285,7 +282,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	}
 
 	public ArrayList<Ship> getShips() {
-		//TODO
+		//TODO Remove this and tweak the networking since player already contains shipList.
 		return null;
 	}
 

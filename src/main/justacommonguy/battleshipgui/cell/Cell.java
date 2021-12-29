@@ -1,4 +1,4 @@
-package justacommonguy.battleshipgui.gui;
+package justacommonguy.battleshipgui.cell;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
@@ -6,9 +6,9 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JPanel;
 
-import justacommonguy.battleshipgui.Faction;
-import justacommonguy.battleshipgui.Result;
-import justacommonguy.battleshipgui.ShipLocation;
+import justacommonguy.battleshipgui.ship.ShipLocation;
+import justacommonguy.battleshipgui.utils.Faction;
+import justacommonguy.battleshipgui.utils.Result;
 
 public abstract class Cell extends JPanel implements MouseListener, HighlightListener {
 
@@ -35,7 +35,7 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 			case ENEMY:
 				return (T) new EnemyCell(location, xInit, yInit);
 			default:
-				return null;
+				throw new IllegalArgumentException("Invalid faction value.");
 		}
 	}
 
@@ -58,8 +58,6 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 			case MISS:
 				setCellColor(getMissColor());
 				break;
-			default:
-				break;
 		}
 	}
 
@@ -72,6 +70,10 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
+		highlightHover();
+	}
+
+	public void highlightHover() {
 		xInitiator.fire();
 		yInitiator.fire();
 		highlight(30);

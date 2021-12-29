@@ -1,7 +1,7 @@
 package justacommonguy.battleshipgui;
 
-import static justacommonguy.battleshipgui.Settings.gameSettings;
-import static justacommonguy.battleshipgui.gui.BattleshipGUI.gameGUI;
+import static justacommonguy.battleshipgui.BattleshipGUI.gameGUI;
+import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
 import com.formdev.flatlaf.intellijthemes.FlatSpacegrayIJTheme;
 
@@ -16,9 +16,11 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import justacommonguy.battleshipgui.gui.BattleshipGUI;
-import justacommonguy.battleshipgui.networking.NetworkComponent;
-import justacommonguy.battleshipgui.networking.Request;
+import justacommonguy.battleshipgui.player.AllyPlayer;
+import justacommonguy.battleshipgui.ship.Ship;
+import justacommonguy.battleshipgui.ship.ShipLocation;
+import justacommonguy.battleshipgui.utils.Faction;
+import justacommonguy.battleshipgui.utils.Result;
 
 // TODO. Should send a message to the client if the game fails.
 // ? Add WAN connection. https://res.infoq.com/articles/Java-7-Sockets-Direct-Protocol/en/resources/Fig2large.jpg
@@ -75,8 +77,6 @@ public class GameServer implements Runnable, NetworkComponent {
 			oos = new ObjectOutputStream(clientSocket.getOutputStream());
 			ois = new ObjectInputStream(clientSocket.getInputStream());
 			System.out.println("Connection started.");
-
-			startGame();
 		}
 		catch (NumberFormatException | IOException e) {
 			System.out.println("Could not host game.");
@@ -87,12 +87,20 @@ public class GameServer implements Runnable, NetworkComponent {
 
 	@Override
 	public void run() {
+		runGame();
+	}
+
+	private void runGame() {
 		hostGame();
+		startGame();
+		unlockPlacing();
+		String winner = play();
+		finish(winner);
 	}
 
 	@Override
 	public void listenRequests() {
-		// TODO
+		// TODO. Chat
 	}
 
 	@Override
@@ -118,10 +126,9 @@ public class GameServer implements Runnable, NetworkComponent {
 		catch (IOException | ClassNotFoundException e) {
 			System.out.println("Failed to start the game.");
 		}
-		unlockPlacing();
 	}
 
-	private void play() {
+	private String play() {
 		Random random = new Random();
 		String winner = host.toString();
 
@@ -142,8 +149,7 @@ public class GameServer implements Runnable, NetworkComponent {
 		if (hostShips.isEmpty()) {
 			winner = client.toString();
 		}
-
-		finish(winner);
+		return winner;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -155,7 +161,6 @@ public class GameServer implements Runnable, NetworkComponent {
 		} catch (ClassNotFoundException | IOException e) {
 			System.out.println("Failed to get client ships.");
 		}
-		play();
 	}
 
 	private void hostAttack() {
@@ -189,6 +194,7 @@ public class GameServer implements Runnable, NetworkComponent {
 		}
 	}
 
+	//TODO This should only check, not update the list
 	private static Result checkGuess(ShipLocation guess, ArrayList<Ship> shipList) {
 		Result result = Result.MISS;
 		loop:
@@ -199,7 +205,7 @@ public class GameServer implements Runnable, NetworkComponent {
 					shipList.remove(ship);
 				case HIT:
 					break loop;
-				case MISS: default:
+				case MISS:
 					break;
 			}
 		}

@@ -1,16 +1,14 @@
-package justacommonguy.battleshipgui.gui;
+package justacommonguy.battleshipgui.cell;
 
-import static justacommonguy.battleshipgui.Settings.gameSettings;
-import static justacommonguy.battleshipgui.gui.BattleshipGUI.gameGUI;
+import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.util.ArrayList;
 
-import justacommonguy.battleshipgui.Ship;
-import justacommonguy.battleshipgui.ShipLocation;
+import justacommonguy.battleshipgui.ship.Ship;
+import justacommonguy.battleshipgui.ship.ShipLocation;
 
 public class AllyCell extends Cell implements MouseWheelListener {
 
@@ -37,30 +35,10 @@ public class AllyCell extends Cell implements MouseWheelListener {
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		super.mouseEntered(e);
+		highlightHover();
 		if (placementAllowed && mover != null) {
 			mover.setNewLocation(location);
 			mover.drag();
-		}
-	}
-
-	public void mouseEntered() {
-		super.mouseEntered(null);
-	}
-
-	/** Temporary highlighting when the ship is being dragged. */
-	public void highlightDragging() {
-		Color color = SHIP_COLOR;
-		int increment = fixIncrement(-50, color);
-		color = new Color(color.getRed() + increment, color.getGreen() + increment, 
-				color.getBlue() + increment);
-
-		boolean isOwnShip = false;
-		if ((oldColor != DEFAULT) && (isOwnShip == false)) {
-			setBackground(KILL_COLOR);
-		}
-		else {
-			setBackground(color);
 		}
 	}
 
@@ -81,6 +59,21 @@ public class AllyCell extends Cell implements MouseWheelListener {
 			mover = null;
 		}
 	}
+
+	/** Temporary highlighting when the ship is being dragged. */
+	public void highlightDragging() {
+		Color color = SHIP_COLOR;
+		int increment = fixIncrement(-50, color);
+		color = new Color(color.getRed() + increment, color.getGreen() + increment, 
+				color.getBlue() + increment);
+
+		if (hasShip() && !hasShip(ship)) {
+			setBackground(KILL_COLOR);
+		}
+		else {
+			setBackground(color);
+		}
+	}
 	
 	public void setShip(Ship ship) {
 		this.ship = ship;
@@ -96,14 +89,6 @@ public class AllyCell extends Cell implements MouseWheelListener {
 
 	public Ship getShip() {
 		return ship;
-	}
-
-	/** Get cells that share the same ship. */
-	public ArrayList<AllyCell> getRelatedCells() {
-		if (ship == null) {
-			return null;
-		}
-		return gameGUI.player.getCellList(ship.getLocations());
 	}
 
 	/** We don't consider that it has a ship if it is the same that is being modified. */

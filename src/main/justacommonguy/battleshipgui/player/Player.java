@@ -1,6 +1,6 @@
-package justacommonguy.battleshipgui;
+package justacommonguy.battleshipgui.player;
 
-import static justacommonguy.battleshipgui.Settings.gameSettings;
+import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,12 +14,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import justacommonguy.battleshipgui.gui.BattleshipGUI;
-import justacommonguy.battleshipgui.gui.Cell;
-import justacommonguy.battleshipgui.gui.HighlightInitiator;
+import justacommonguy.battleshipgui.BattleshipGUI;
+import justacommonguy.battleshipgui.cell.Cell;
+import justacommonguy.battleshipgui.cell.HighlightInitiator;
+import justacommonguy.battleshipgui.ship.ShipLocation;
+import justacommonguy.battleshipgui.utils.Faction;
 
 public abstract class Player<T extends Cell> implements Serializable {
-	
+	// TODO Decrease coupling between player and other classes.
+	// ? Make a separate class to handle the cells and the map
+
 	// The height and the width need to have an extra column or row for the letters and numbers.
 	public static final int HEIGHT = 11;
 	public static final int WIDTH = 11;
@@ -53,18 +57,20 @@ public abstract class Player<T extends Cell> implements Serializable {
 		ArrayList<T> cellList = new ArrayList<T>();
 		
 		for (ShipLocation location : locationList) {
-			if (getCell(location) == null) {
+			T cell = getCell(location);
+			if (cell == null) {
 				return null;
 			}
-			cellList.add(getCell(location));
+			cellList.add(cell);
 		}
 		
 		return cellList;
 	}
 
+	//TODO Divide method into several ones
 	public JPanel makeMap() {
 		if (!cellList.isEmpty()) {
-			System.out.println("Map has been already created.");
+			System.out.println("Map has already been created.");
 			return null;
 		}
 
