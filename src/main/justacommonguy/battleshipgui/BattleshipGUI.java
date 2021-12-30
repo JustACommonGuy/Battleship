@@ -11,6 +11,7 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -22,8 +23,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import justacommonguy.battleshipgui.player.AllyPlayer;
-import justacommonguy.battleshipgui.player.EnemyPlayer;
+import justacommonguy.battleshipgui.cell.AllyMap;
+import justacommonguy.battleshipgui.cell.EnemyMap;
+import justacommonguy.battleshipgui.cell.ShipMover;
+import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
@@ -42,22 +45,19 @@ public class BattleshipGUI implements GUI {
 	public static final double X_RESOLUTION =
 			Toolkit.getDefaultToolkit().getScreenSize().getWidth();
 	
-	// !
-	// ? Maybe player should be in GameLogic
-	private AllyPlayer player;
-	// ? Only the enemy's name might be needed
-	private EnemyPlayer enemy;
+	private String enemyName = "OPPONENT";
+	private AllyMap allyMap = new AllyMap();
+	private EnemyMap enemyMap = new EnemyMap();
 
 	private JFrame frame = new JFrame();
-	private JPanel playerMap;
-	private JPanel enemyMap;
+	private JPanel allyMapPanel;
+	private JPanel enemyMapPanel;
 	private JLabel enemyGridLabel;
 	//TODO. Change this panel when game has started.
 	private JPanel buttonPanel;
 	private JButton hostButton;
 	private JButton joinButton;
 
-	// !
 	public BattleshipGUI(GameClient client) {
 		this.client = client;
 	}
@@ -95,10 +95,10 @@ public class BattleshipGUI implements GUI {
 		JPanel playArea = new JPanel(new GridBagLayout());
 		Font bold = new Font(Font.SANS_SERIF, Font.BOLD, 20);
 
-		playerMap = player.makeMap();
-		enemyMap = enemy.makeMap();
+		allyMapPanel = allyMap.makeMap();
+		enemyMapPanel = enemyMap.makeMap();
 		JLabel gridLabel = new JLabel("YOUR GRID");
-		enemyGridLabel = new JLabel(enemy + "'S GRID");
+		enemyGridLabel = new JLabel(enemyName + "'S GRID");
 		gridLabel.setFont(bold);
 		enemyGridLabel.setFont(bold);
 
@@ -107,9 +107,9 @@ public class BattleshipGUI implements GUI {
 		SwingUtils.setGridBagConstraintsValues(gbc, 1, 0, 0, 0, insets);
 		playArea.add(enemyGridLabel, gbc);
 		SwingUtils.setGridBagConstraintsValues(gbc, 0, 1, 0, 0, insets);
-		playArea.add(playerMap, gbc);
+		playArea.add(allyMapPanel, gbc);
 		SwingUtils.setGridBagConstraintsValues(gbc, 1, 1, 0, 0, insets);
-		playArea.add(enemyMap, gbc);
+		playArea.add(enemyMapPanel, gbc);
 		JPanel eastPanel = new JPanel();
 		eastPanel.add(playArea);
 
@@ -178,6 +178,11 @@ public class BattleshipGUI implements GUI {
 				client.joinGame(addressField.getText(), Integer.parseInt(portField.getText()));
 			}
 		}
+	}
+
+	public void addShips(ArrayList<Ship> shipList) {
+		allyMap.placeShips(shipList);
+		ShipMover.setMap(allyMap);
 	}
 
 	public void startGame(String enemyName) {

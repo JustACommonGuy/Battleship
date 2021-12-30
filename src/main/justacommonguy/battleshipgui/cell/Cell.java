@@ -7,7 +7,6 @@ import java.awt.event.MouseListener;
 import javax.swing.JPanel;
 
 import justacommonguy.battleshipgui.ship.ShipLocation;
-import justacommonguy.battleshipgui.utils.Faction;
 import justacommonguy.battleshipgui.utils.Result;
 
 public abstract class Cell extends JPanel implements MouseListener, HighlightListener {
@@ -25,18 +24,6 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 		this.location = location;
 		this.xInitiator = xInit;
 		this.yInitiator = yInit;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T extends Cell> T getInstance(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit, Faction faction) {
-		switch (faction) {
-			case ALLY:
-				return (T) new AllyCell(location, xInit, yInit);
-			case ENEMY:
-				return (T) new EnemyCell(location, xInit, yInit);
-			default:
-				throw new IllegalArgumentException("Invalid faction value.");
-		}
 	}
 
 	public void setCellColor(Color color) {

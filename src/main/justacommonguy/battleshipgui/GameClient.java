@@ -7,12 +7,15 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import justacommonguy.battleshipgui.player.AllyPlayer;
-import justacommonguy.battleshipgui.player.EnemyPlayer;
+import justacommonguy.battleshipgui.cell.Map;
+import justacommonguy.battleshipgui.player.Player;
+import justacommonguy.battleshipgui.ship.Ship;
+import justacommonguy.battleshipgui.ship.ShipBuilder;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 import justacommonguy.battleshipgui.utils.Faction;
 import justacommonguy.battleshipgui.utils.Result;
@@ -22,12 +25,12 @@ public class GameClient implements NetworkComponent {
 	private BattleshipGUI gui = new BattleshipGUI(this);
 	private GameServer server = new GameServer(this);
 	
-	// ? Maybe player should be in GameLogic
-	private AllyPlayer player;
+	private Player player;
 	// ? Only the enemy's name might be needed
-	private EnemyPlayer enemy;
+	private Player enemy;
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
+	private ArrayList<Ship> shipList = new ArrayList<Ship>();
 
 	public static void main(String[] args) {
 		try {
@@ -54,13 +57,21 @@ public class GameClient implements NetworkComponent {
 			gameSettings.setSetting("username", hostUsername);
 			gameSettings.saveSettings();
 		}
-		player = new AllyPlayer(gameSettings.getSetting("username"));
-		enemy = new EnemyPlayer("OPPONENT");
+		player = new Player(gameSettings.getSetting("username"));
+		enemy = new Player("OPPONENT");
 	}
 
 	public void start() {
 		gui.start(JFrame.EXIT_ON_CLOSE);
-		player.buildShips();
+		shipList = buildShips();
+		gui.addShips(shipList);
+	}
+
+	private ArrayList<Ship> buildShips() {
+		ArrayList<Ship> ships = new ArrayList<Ship>();
+		ships = new ShipBuilder(Map.HEIGHT, Map.WIDTH).buildShipsRandomly();
+		// ShipMover needs access to the player's fleet.
+		return ships;
 	}
 
 	public void hostGame() {
@@ -135,8 +146,8 @@ public class GameClient implements NetworkComponent {
 		return null;
 	}
 	
-	public AllyPlayer getPlayer() {
-		return (AllyPlayer) player.clone();
+	public Player getPlayer() {
+		return (Player) player.clone();
 	}
 
 	public void startGame(String enemyName) {

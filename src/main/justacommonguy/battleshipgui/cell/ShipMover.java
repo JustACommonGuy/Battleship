@@ -2,13 +2,12 @@ package justacommonguy.battleshipgui.cell;
 
 import java.util.ArrayList;
 
-import justacommonguy.battleshipgui.player.AllyPlayer;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
 public class ShipMover {
 	
-	private static AllyPlayer owner;
+	private static AllyMap map;
 	private ArrayList<AllyCell> oldCellList;
 	private Ship oldShip;
 	private ShipLocation newLocation;
@@ -18,10 +17,10 @@ public class ShipMover {
 		if (oldCell == null) {
 			throw new IllegalArgumentException("AllyCell must not be null.");
 		}
-		if (owner == null) {
-			System.out.println("WARNING. Fleet's owner has not been declared.");
+		if (map == null) {
+			throw new RuntimeException("Map has not been initialized.");
 		}
-		oldCellList = owner.getRelatedCells(oldCell);
+		oldCellList = map.getRelatedCells(oldCell);
 		oldShip = oldCell.getShip();
 		this.oldLocation = oldCell.getShipLocation();
 		/* Unless otherwise stated, the ship does not move. */
@@ -29,8 +28,8 @@ public class ShipMover {
 	}
 
 	/* Huh. 'this' cannot be used for static setters. */
-	public static void setOwner(AllyPlayer newOwner) {
-		owner = newOwner;
+	public static void setMap(AllyMap newMap) {
+		map = newMap;
 	} 
 
 	public void drag() {
@@ -38,7 +37,7 @@ public class ShipMover {
 				oldLocation, newLocation);
 		
 		if (newLocations != null) {
-			ArrayList<AllyCell> newCells = owner.getCellList(newLocations);
+			ArrayList<AllyCell> newCells = map.getCellList(newLocations);
 			if (newCells != null) {
 				for (AllyCell newCell : newCells) {
 					newCell.highlightDragging();
@@ -66,7 +65,7 @@ public class ShipMover {
 	}
 
 	private void moveShip(ArrayList<ShipLocation> newLocations) {
-		ArrayList<AllyCell> newCells = owner.getCellList(newLocations);
+		ArrayList<AllyCell> newCells = map.getCellList(newLocations);
 		boolean placementValid = true;
 		// This already checks if the arraylist is null.
 		if (!areCellsValid(newCells)) {
@@ -79,7 +78,7 @@ public class ShipMover {
 		else {
 			failureHighlight();
 		}
-		owner.getCell(newLocation).highlightHover();
+		map.getCell(newLocation).highlightHover();
 	}
 
 	private void failureHighlight() {
@@ -107,7 +106,7 @@ public class ShipMover {
 	}
 
 	private void updateShip(ArrayList<ShipLocation> newLocations) {
-		ArrayList<AllyCell> newCells = owner.getCellList(newLocations);
+		ArrayList<AllyCell> newCells = map.getCellList(newLocations);
 		for (AllyCell cell : oldCellList) {
 			cell.setShip(null);
 		}

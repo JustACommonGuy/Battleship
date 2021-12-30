@@ -10,13 +10,14 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Random;
 
-import justacommonguy.battleshipgui.player.AllyPlayer;
+import justacommonguy.battleshipgui.player.Player;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 import justacommonguy.battleshipgui.utils.Faction;
 import justacommonguy.battleshipgui.utils.Result;
 
 // TODO. Should send a message to the client if the game fails.
+// TODO. Separate client and host code.
 // ? Add WAN connection. https://res.infoq.com/articles/Java-7-Sockets-Direct-Protocol/en/resources/Fig2large.jpg
 public class GameServer implements Runnable, NetworkComponent {
 
@@ -26,8 +27,8 @@ public class GameServer implements Runnable, NetworkComponent {
 	private ObjectOutputStream oos;
 	private ArrayList<Ship> hostShips = new ArrayList<Ship>();
 	private ArrayList<Ship> clientShips = new ArrayList<Ship>();
-	private AllyPlayer host;
-	private AllyPlayer client;
+	private Player host;
+	private Player client;
 
 	public GameServer(GameClient local) {
 		this.local = local;
@@ -82,7 +83,7 @@ public class GameServer implements Runnable, NetworkComponent {
 		try {
 			oos.writeObject(Request.SEND_PLAYER);
 			System.out.println("Requested client to send player info.");
-			client = (AllyPlayer) ois.readObject();
+			client = (Player) ois.readObject();
 			System.out.println("Received client's player info. Player: " + client);
 			local.startGame(client.toString());
 
