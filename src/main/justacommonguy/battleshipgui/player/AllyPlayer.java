@@ -3,6 +3,7 @@ package justacommonguy.battleshipgui.player;
 import java.util.ArrayList;
 
 import justacommonguy.battleshipgui.cell.AllyCell;
+import justacommonguy.battleshipgui.cell.ShipMover;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipBuilder;
 import justacommonguy.battleshipgui.utils.Faction;
@@ -16,51 +17,10 @@ public class AllyPlayer extends Player<AllyCell> {
 	}
 
 	public void buildShips() {
-		shipList = new ShipBuilder(HEIGHT, WIDTH).placeShipsRandomly();
+		shipList = new ShipBuilder(HEIGHT, WIDTH).placeShipsRandomly(this);
+		// ShipMover needs access to the player's fleet.
+		ShipMover.setOwner(this);
 	}
-	
-	// public void placeShipsRandomly() {
-	// 	try {
-	// 		for (int size : Ship.SHIP_SIZES) {
-	// 			Ship randomShip = null;
-	// 			while (!isShipValid(randomShip)) {
-	// 				randomShip = Ship.getRandomShip(size, HEIGHT, WIDTH);
-	// 			}
-	// 			shipList.add(randomShip);
-	// 			for (ShipLocation location : randomShip.getLocations()) {
-	// 				AllyCell cell = getCell(location);
-	// 				cell.setShip(randomShip);
-	// 			}
-	// 		}
-	// 	}
-	// 	catch (RandomShipFailure e) {
-	// 		System.out.println("ERROR: Could not place random ships.");
-	// 	}
-	// }
-
-	// private boolean isShipValid(Ship ship) {
-	// 	if (ship == null) {
-	// 		return false;
-	// 	}
-	// 	for (ShipLocation location : ship.getLocations()) {
-	// 		if (isLocationUsed(location)) {
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// private boolean isLocationUsed(ShipLocation location) {
-	// 	if (location == null) {
-	// 		throw new IllegalArgumentException("Location must not be null.");
-	// 	}
-	// 	for (Ship existingShip : shipList) {
-	// 		if (existingShip.getLocations().contains(location)) {
-	// 			return true;
-	// 		}
-	// 	}
-	// 	return false;
-	// }
 
 	/** Get cells that share the same ship. */
 	public ArrayList<AllyCell> getRelatedCells(AllyCell cell) {

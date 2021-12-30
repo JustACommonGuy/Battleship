@@ -1,9 +1,6 @@
 package justacommonguy.battleshipgui;
 
-import static justacommonguy.battleshipgui.BattleshipGUI.gameGUI;
 import static justacommonguy.battleshipgui.config.Settings.gameSettings;
-
-import com.formdev.flatlaf.intellijthemes.FlatSpacegrayIJTheme;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,9 +9,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Random;
-
-import javax.swing.JFrame;
-import javax.swing.UIManager;
 
 import justacommonguy.battleshipgui.player.AllyPlayer;
 import justacommonguy.battleshipgui.ship.Ship;
@@ -26,7 +20,7 @@ import justacommonguy.battleshipgui.utils.Result;
 // ? Add WAN connection. https://res.infoq.com/articles/Java-7-Sockets-Direct-Protocol/en/resources/Fig2large.jpg
 public class GameServer implements Runnable, NetworkComponent {
 
-	public static GameServer gameServer = getInstance();
+	private GameClient local;
 
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
@@ -35,36 +29,11 @@ public class GameServer implements Runnable, NetworkComponent {
 	private AllyPlayer host;
 	private AllyPlayer client;
 
-	public static void main(String[] args) {
-		try {
-			UIManager.setLookAndFeel(new FlatSpacegrayIJTheme());
-		}
-		catch (Exception ex) {
-			System.out.println("Failed to set LaF");
-		}
-
-		gameServer.start(args);
+	public GameServer(GameClient local) {
+		this.local = local;
 	}
 
-	private GameServer() {}
-
-	public static GameServer getInstance() {
-		if (gameServer == null) {
-			gameServer = new GameServer();
-		}
-		return gameServer;
-	}
-
-	public void start(String[] args) {
-		String hostUsername = null;
-		if (args.length != 0) {
-			hostUsername = args[0];
-		}
-		gameGUI = BattleshipGUI.getInstance(hostUsername);
-		gameGUI.start(JFrame.EXIT_ON_CLOSE);
-	}
-
-	public void hostGame() {
+	public void start() {
 		try (ServerSocket serverSocket = new ServerSocket(
 				Integer.parseInt(gameSettings.getSetting("server_port")))) {
 			System.out.println("Waiting for connection.");
@@ -91,7 +60,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	private void runGame() {
-		hostGame();
+		start();
 		startGame();
 		unlockPlacing();
 		String winner = play();
@@ -115,11 +84,11 @@ public class GameServer implements Runnable, NetworkComponent {
 			System.out.println("Requested client to send player info.");
 			client = (AllyPlayer) ois.readObject();
 			System.out.println("Received client's player info. Player: " + client);
-			gameGUI.startGame(client.toString());
+			local.startGame(client.toString());
 
 			oos.writeObject(Request.START);
 			System.out.println("Requested client to start game.");
-			host = gameGUI.getPlayer();
+			host = local.getPlayer();
 			oos.writeObject(host.toString());
 			System.out.println("Sent host info to client. Player: " + host);
 		}
@@ -154,7 +123,8 @@ public class GameServer implements Runnable, NetworkComponent {
 	
 	@SuppressWarnings("unchecked")
 	private void unlockPlacing() {
-		hostShips = gameGUI.getShips();
+		// TODO get ships from the player sent
+		// hostShips = gameGUI.getShips();
 		try {
 			oos.writeObject(Request.PLACE_SHIPS);
 			clientShips = (ArrayList<Ship>) ois.readObject();
@@ -164,7 +134,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	private void hostAttack() {
-		ShipLocation guess = gameGUI.getAttack();
+		ShipLocation guess = local.getAttack();
 		Result result = checkGuess(guess, clientShips);
 		updateLocations(guess, result, Faction.ENEMY);
 		try {
@@ -213,7 +183,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	private void updateLocations(ShipLocation guess, Result result, Faction factionAttacked) {
-		gameGUI.updateMap(guess, result, factionAttacked);
+		local.updateMap(guess, result, factionAttacked);
 		try {
 			oos.writeObject(Request.ATTACK_RESULT);
 			oos.writeObject(guess);
@@ -225,7 +195,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	public void finish(String winner) {
-		gameGUI.finish(winner);
+		local.finish(winner);
 		try {
 			oos.writeObject(Request.FINISH);
 			oos.writeObject(winner);

@@ -47,7 +47,8 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 		setBackground(color);
 	}
 
-	public void setCellColor(Result result) {
+	// TODO. Instead of using colors for miss, paint crosses over the panel.
+	public void updateState(Result result) {
 		switch (result) {
 			case HIT:
 				setCellColor(getHitColor());

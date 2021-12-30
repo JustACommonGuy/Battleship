@@ -1,10 +1,9 @@
 package justacommonguy.battleshipgui.ship;
 
-import static justacommonguy.battleshipgui.BattleshipGUI.gameGUI;
-
 import java.util.ArrayList;
 
 import justacommonguy.battleshipgui.cell.AllyCell;
+import justacommonguy.battleshipgui.player.AllyPlayer;
 
 public class ShipBuilder {
 
@@ -18,7 +17,7 @@ public class ShipBuilder {
 		this.width = width;
 	}
 
-	public ArrayList<Ship> placeShipsRandomly() {
+	public ArrayList<Ship> placeShipsRandomly(AllyPlayer owner) {
 		try {
 			for (int size : Ship.SHIP_SIZES) {
 				Ship randomShip = null;
@@ -27,7 +26,7 @@ public class ShipBuilder {
 				}
 				shipList.add(randomShip);
 				for (ShipLocation location : randomShip.getLocations()) {
-					AllyCell cell = gameGUI.player.getCell(location);
+					AllyCell cell = owner.getCell(location);
 					cell.setShip(randomShip);
 				}
 			}

@@ -1,6 +1,5 @@
 package justacommonguy.battleshipgui;
 
-import static justacommonguy.battleshipgui.GameServer.gameServer;
 import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
 import java.awt.BorderLayout;
@@ -12,11 +11,6 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -30,10 +24,6 @@ import javax.swing.JTextField;
 
 import justacommonguy.battleshipgui.player.AllyPlayer;
 import justacommonguy.battleshipgui.player.EnemyPlayer;
-import justacommonguy.battleshipgui.ship.Ship;
-import justacommonguy.battleshipgui.ship.ShipLocation;
-import justacommonguy.battleshipgui.utils.Faction;
-import justacommonguy.battleshipgui.utils.Result;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
@@ -42,7 +32,9 @@ import justacommonguy.guiutils.SwingUtils;
 // TODO. Add better exception handling
 // TODO. Add better logging
 //? Add a counter of guesses?
-public class BattleshipGUI implements GUI, NetworkComponent {
+public class BattleshipGUI implements GUI {
+
+	private GameClient client;
 
 	public static BattleshipGUI gameGUI;
 	public static final double Y_RESOLUTION = 
@@ -50,12 +42,11 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	public static final double X_RESOLUTION =
 			Toolkit.getDefaultToolkit().getScreenSize().getWidth();
 	
+	// !
 	// ? Maybe player should be in GameLogic
-	public AllyPlayer player;
+	private AllyPlayer player;
 	// ? Only the enemy's name might be needed
-	public EnemyPlayer enemy;
-	private ObjectInputStream ois;
-	private ObjectOutputStream oos;
+	private EnemyPlayer enemy;
 
 	private JFrame frame = new JFrame();
 	private JPanel playerMap;
@@ -66,40 +57,30 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 	private JButton hostButton;
 	private JButton joinButton;
 
-	private BattleshipGUI(String hostUsername) {
-		//TODO
-
-		if (gameSettings.getSetting("username").equals("")) {
-			if (hostUsername == null) {
-				hostUsername = askName();
-			}
-			gameSettings.setSetting("username", hostUsername);
-			gameSettings.saveSettings();
-		}
-		player = new AllyPlayer(gameSettings.getSetting("username"));
-		enemy = new EnemyPlayer("OPPONENT");
-	}
-
-	public static BattleshipGUI getInstance(String hostUsername) {
-		if (gameGUI == null) {
-			gameGUI = new BattleshipGUI(hostUsername);
-		}
-		return gameGUI;
+	// !
+	public BattleshipGUI(GameClient client) {
+		this.client = client;
 	}
 
 	public String askName() {
 		JOptionPane popup = new JOptionPane("Please input your username.", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION);
 		popup.setWantsInput(true);
-		JDialog dialog = popup.createDialog(frame, "Welcome");
+		JDialog dialog = popup.createDialog(new JFrame(), "Welcome");
 
 		popup.selectInitialValue();
 		dialog.setVisible(true);
 		dialog.dispose();
+
+		String name = (String) popup.getInputValue();
+		// Insist (rather aggressively) on a valid name with recursion.
+		if (name.equals("")) {
+			name = askName();
+		}
 		
-		return (String) popup.getInputValue();
+		return name;
 	}
 
-	// ? Subdivide the method into several smaller GUI methods.
+	// ? Divide the method into several smaller GUI methods.
 	@Override
 	public void start(int closeOperation) {
 		//? Maybe disable close button so the player will quit appropiately.
@@ -155,29 +136,20 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 		/* For reasons that humanity will never know, 
 		the dumb frame needs to be brought to the front when a popup appears. */
 		SwingUtils.frameToFront(frame);
-		player.buildShips();
 	}
 
 	public class HostGameListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// The server would be stuck waiting, so the GUI goes crazy if I call it directly. 
-			Thread hostThread = new Thread(gameServer);
-			hostThread.start();
+			client.hostGame();
 		}
 	}
 
-	public class JoinGameListener implements ActionListener, Runnable {
+	public class JoinGameListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			Thread joinThread = new Thread(this);
-			joinThread.start();
-		}
-
-		@Override
-		public void run() {
 			JLabel info = new JLabel("Please input the host's IP Address and Port.");
 			info.setAlignmentX(Component.CENTER_ALIGNMENT);
 			JTextField addressField = new JTextField();
@@ -194,7 +166,7 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 			panel.add(addressField);
 			panel.add(portField);
 			panel.add(saveInfoCheck);
-
+	
 			int option = JOptionPane.showConfirmDialog(frame, panel, "Join game", 
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 			if (option == JOptionPane.OK_OPTION) {
@@ -203,101 +175,12 @@ public class BattleshipGUI implements GUI, NetworkComponent {
 					gameSettings.setSetting("default_port", portField.getText());
 					gameSettings.saveSettings();
 				}
-				joinGame(addressField.getText(), Integer.parseInt(portField.getText()));
+				client.joinGame(addressField.getText(), Integer.parseInt(portField.getText()));
 			}
 		}
-	}
-
-	public void joinGame(String ipAddress, int port) {
-		try (Socket socket = new Socket(ipAddress, port)) {
-			oos = new ObjectOutputStream(socket.getOutputStream());
-			ois = new ObjectInputStream(socket.getInputStream());
-			System.out.println("Connection started.");
-			listenRequests();
-		}
-		catch (IOException e) {
-			System.out.println("Connection failed.");
-			ois = null;
-			oos = null;
-		}
-	}
-
-	@Override
-	public void listenRequests() {
-		Object obj;
-		try {
-			while ((obj = ois.readObject()) != null) {
-				Object answer = respondRequest((Request) obj);
-				if (answer != null) {
-					oos.writeObject(answer);
-				}
-			}
-		}
-		catch (IOException | ClassNotFoundException e) {
-			System.out.println("Failed to read object.");
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public Object respondRequest(Request request) {
-		try {
-			System.out.println("Received " + request + " request.");
-			switch (request) {
-				case ATTACK:
-					ShipLocation attackLocation = getAttack();
-					System.out.println("Sending " + attackLocation);
-					return attackLocation;
-				case ATTACK_RESULT:
-					updateMap((ShipLocation) ois.readObject(), (Result) ois.readObject(), (Faction) ois.readObject());
-					break;
-				case FINISH:
-					finish((String) ois.readObject());
-					break;
-				case PLACE_SHIPS:
-					System.out.println("Sending ships.");
-					return getShips();
-				case SEND_PLAYER:
-					System.out.println("Sending " + player);
-					return getPlayer();
-				case START:
-					startGame((String) ois.readObject());
-					break;
-			}
-		}
-		catch (ClassNotFoundException | IOException e) {
-			System.out.println("Failed to respond server requests.");
-		}
-		
-		return null;
-	}
-	
-	public AllyPlayer getPlayer() {
-		return player;
 	}
 
 	public void startGame(String enemyName) {
-		enemy.setName(enemyName);
 		enemyGridLabel.setText(enemyName + "'S GRID");
-	}
-
-	public ArrayList<Ship> getShips() {
-		//TODO Remove this and tweak the networking since player already contains shipList.
-		return null;
-	}
-
-	public ShipLocation getAttack() {
-		//TODO
-		return null;
-	}
-	
-	public void updateMap(ShipLocation guess, Result result, Faction factionAttacked) {
-		//TODO
-		System.out.println("Updated user map. Guess Location: " + guess + ". Result: " + result);
-	}
-
-	public void finish(String winner) {
-		//TODO
-		System.out.println("Finished the game. Winner is " + winner);
 	}
 }

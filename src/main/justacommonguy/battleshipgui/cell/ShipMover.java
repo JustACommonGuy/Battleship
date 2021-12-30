@@ -1,14 +1,14 @@
 package justacommonguy.battleshipgui.cell;
 
-import static justacommonguy.battleshipgui.BattleshipGUI.gameGUI;
-
 import java.util.ArrayList;
 
+import justacommonguy.battleshipgui.player.AllyPlayer;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
-class ShipMover {
+public class ShipMover {
 	
+	private static AllyPlayer owner;
 	private ArrayList<AllyCell> oldCellList;
 	private Ship oldShip;
 	private ShipLocation newLocation;
@@ -18,19 +18,27 @@ class ShipMover {
 		if (oldCell == null) {
 			throw new IllegalArgumentException("AllyCell must not be null.");
 		}
-		oldCellList = gameGUI.player.getRelatedCells(oldCell);
+		if (owner == null) {
+			System.out.println("WARNING. Fleet's owner has not been declared.");
+		}
+		oldCellList = owner.getRelatedCells(oldCell);
 		oldShip = oldCell.getShip();
 		this.oldLocation = oldCell.getShipLocation();
 		/* Unless otherwise stated, the ship does not move. */
 		newLocation = oldCell.getShipLocation();
 	}
 
+	/* Huh. 'this' cannot be used for static setters. */
+	public static void setOwner(AllyPlayer newOwner) {
+		owner = newOwner;
+	} 
+
 	public void drag() {
 		ArrayList<ShipLocation> newLocations = oldShip.getDraggedLocations(
 				oldLocation, newLocation);
 		
 		if (newLocations != null) {
-			ArrayList<AllyCell> newCells = gameGUI.player.getCellList(newLocations);
+			ArrayList<AllyCell> newCells = owner.getCellList(newLocations);
 			if (newCells != null) {
 				for (AllyCell newCell : newCells) {
 					newCell.highlightDragging();
@@ -58,7 +66,7 @@ class ShipMover {
 	}
 
 	private void moveShip(ArrayList<ShipLocation> newLocations) {
-		ArrayList<AllyCell> newCells = gameGUI.player.getCellList(newLocations);
+		ArrayList<AllyCell> newCells = owner.getCellList(newLocations);
 		boolean placementValid = true;
 		// This already checks if the arraylist is null.
 		if (!areCellsValid(newCells)) {
@@ -71,7 +79,7 @@ class ShipMover {
 		else {
 			failureHighlight();
 		}
-		gameGUI.player.getCell(newLocation).highlightHover();
+		owner.getCell(newLocation).highlightHover();
 	}
 
 	private void failureHighlight() {
@@ -86,17 +94,20 @@ class ShipMover {
 			catch (InterruptedException e) {}
 
 			for (AllyCell cell : oldCellList) {
+				// Check if the cell still has a ship because it might have moved during the sleep.
+				if (cell.hasShip()) {
+					cell.setCellColor(cell.getShipColor());
+				}
 				boolean highlighted = cell.isHighlighted();
-				cell.setCellColor(cell.getShipColor());
 				if (highlighted) {
 					cell.cellHighlighted();
 				}
 			}
-		}).start();
+		}, "FailureHighlighter").start();
 	}
 
 	private void updateShip(ArrayList<ShipLocation> newLocations) {
-		ArrayList<AllyCell> newCells = gameGUI.player.getCellList(newLocations);
+		ArrayList<AllyCell> newCells = owner.getCellList(newLocations);
 		for (AllyCell cell : oldCellList) {
 			cell.setShip(null);
 		}

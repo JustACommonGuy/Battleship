@@ -20,9 +20,7 @@ import justacommonguy.battleshipgui.cell.HighlightInitiator;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 import justacommonguy.battleshipgui.utils.Faction;
 
-public abstract class Player<T extends Cell> implements Serializable {
-	// TODO Decrease coupling between player and other classes.
-	// ? Make a separate class to handle the cells and the map
+public abstract class Player<T extends Cell> implements Serializable, Cloneable {
 
 	// The height and the width need to have an extra column or row for the letters and numbers.
 	public static final int HEIGHT = 11;
@@ -32,7 +30,7 @@ public abstract class Player<T extends Cell> implements Serializable {
 	/** GridLayout does not allow for specific cell sizes, so we set a global
 		size to display squared cells. */
 	private static final Dimension PANEL_SIZE = new Dimension(
-			((int) BattleshipGUI.Y_RESOLUTION / 3), (int) (BattleshipGUI.Y_RESOLUTION / 3));
+			(int) ( BattleshipGUI.Y_RESOLUTION / 3), (int) (BattleshipGUI.Y_RESOLUTION / 3));
 
 	protected String name;
 	protected HashMap<ShipLocation, T> cellList = new HashMap<ShipLocation, T>();
@@ -44,9 +42,9 @@ public abstract class Player<T extends Cell> implements Serializable {
 	}
 
 	public T getCell(ShipLocation location) {
-		if (!cellList.containsKey(location)) {
-			//// System.out.println("Ouch. " + location);
-		}
+		//// if (!cellList.containsKey(location)) {
+		//// 	System.out.println("Ouch. " + location);
+		//// }
 		return cellList.get(location);
 	}
 
@@ -67,7 +65,8 @@ public abstract class Player<T extends Cell> implements Serializable {
 		return cellList;
 	}
 
-	//TODO Divide method into several ones
+	/* In a perfect world this method would be in a dedicated class and split into several
+	methods, but after an hour of pain and suffering I just give up. */
 	public JPanel makeMap() {
 		if (!cellList.isEmpty()) {
 			System.out.println("Map has already been created.");
@@ -96,26 +95,26 @@ public abstract class Player<T extends Cell> implements Serializable {
 			yHighlightInitiators[i] = new HighlightInitiator();
 		}
 		
-		//!
 		char columnChar = 'A';
+		/* Unsupported feature. It just follows the ASCII table. It will use other symbols 
+		 after 9. */
 		if (Boolean.parseBoolean(gameSettings.getSetting("column_numbers"))) {
 			columnChar = '1';
 		}
 		int rowNumber = 1;
+
 		for (int i = 0; i < HEIGHT*WIDTH; i++) {
 			if ((cellX == 0) && (cellY == 0)) {
 				JLabel emptyLabel = new JLabel("", SwingConstants.CENTER);
 				map.add(emptyLabel);
 			}
-			else if ((cellX <= WIDTH) && (cellY == 0)) {
-				JLabel letterLabel = new JLabel(String.valueOf(columnChar), SwingConstants.CENTER);
+			else if (cellY == 0) {
+				JLabel letterLabel = new JLabel(Character.toString(columnChar++), SwingConstants.CENTER);
 				map.add(letterLabel);
-				columnChar++;
 			}
 			else if (cellX == 0) {
-				JLabel numberLabel = new JLabel(String.valueOf(rowNumber), SwingConstants.CENTER);
+				JLabel numberLabel = new JLabel(Integer.toString(rowNumber++), SwingConstants.CENTER);
 				map.add(numberLabel);
-				rowNumber++;
 			}
 			
 			/* The cells need the initiators so they can fire them. 
@@ -145,6 +144,16 @@ public abstract class Player<T extends Cell> implements Serializable {
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public Object clone() {
+		try {
+			return super.clone();
+		}
+		catch (CloneNotSupportedException ex) {
+			throw new RuntimeException("Could not clone player.");
+		}
 	}
 
 	public void setName(String name) {
