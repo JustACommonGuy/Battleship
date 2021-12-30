@@ -6,7 +6,6 @@ public final class ShipLocation implements Serializable {
 	
 	private int x;
 	private int y;
-	private int[] coords = new int[2];
 	private int cellNum;
 
 	public ShipLocation(int x, int y) {
@@ -15,8 +14,6 @@ public final class ShipLocation implements Serializable {
 		}
 		this.x = x;
 		this.y = y;
-		coords[0] = x;
-		coords[1] = y;
 		cellNum = this.y * 10 + this.x;
 	}
 
@@ -51,10 +48,6 @@ public final class ShipLocation implements Serializable {
 
 	public int getY() {
 		return y;
-	}
-
-	public int[] getCoords() {
-		return coords;
 	}
 
 	public int getCellNum() {

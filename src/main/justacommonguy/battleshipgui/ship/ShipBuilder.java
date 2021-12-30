@@ -6,7 +6,7 @@ public class ShipBuilder {
 
 	private final int height;
 	private final int width;
-	private ArrayList<Ship> shipList = new ArrayList<Ship>();
+	private ArrayList<Ship> shipList;
 
 	/** The builder needs to know the field's dimensions. */
 	public ShipBuilder(int height, int width) {
@@ -15,6 +15,7 @@ public class ShipBuilder {
 	}
 
 	public ArrayList<Ship> buildShipsRandomly() {
+		shipList = new ArrayList<Ship>();
 		try {
 			for (int size : Ship.SHIP_SIZES) {
 				Ship randomShip = null;

@@ -12,7 +12,7 @@ import justacommonguy.battleshipgui.ship.ShipLocation;
 
 public class AllyCell extends Cell implements MouseWheelListener {
 
-	private static boolean placementAllowed = true;
+	private static boolean placementAllowed;
 	private static ShipMover mover;
 
 	private static final Color MISS_COLOR = gameSettings.getColor("ally_miss_color");
@@ -61,7 +61,7 @@ public class AllyCell extends Cell implements MouseWheelListener {
 	}
 
 	/** Temporary highlighting when the ship is being dragged. */
-	public void highlightDragging() {
+	void highlightDragging() {
 		Color color = SHIP_COLOR;
 		int increment = fixIncrement(-50, color);
 		color = new Color(color.getRed() + increment, color.getGreen() + increment, 
@@ -74,11 +74,19 @@ public class AllyCell extends Cell implements MouseWheelListener {
 			setBackground(color);
 		}
 	}
+
+	public boolean hasShip() {
+		return ship != null;
+	}
+
+	public boolean hasShip(Ship ship) {
+		return this.ship == ship;
+	}
 	
-	public void setShip(Ship ship) {
+	void setShip(Ship ship) {
 		this.ship = ship;
 		if (ship == null) {
-			setCellColor(DEFAULT);
+			setCellColor(getDefaultColor());
 			removeMouseWheelListener(this);
 		}
 		else {
@@ -87,36 +95,31 @@ public class AllyCell extends Cell implements MouseWheelListener {
 		}
 	}
 
-	public Ship getShip() {
+	Ship getShip() {
 		return ship;
 	}
 
-	/** We don't consider that it has a ship if it is the same that is being modified. */
-	public boolean hasShip() {
-		return ship != null;
-	}
-
-	public boolean hasShip(Ship ship) {
-		return this.ship == ship;
+	static void setPlacementAllowed(boolean newPlacementAllowed) {
+		placementAllowed = newPlacementAllowed;
 	}
 
 	@Override
 	public Color getMissColor() {
-		return MISS_COLOR;
+		return new Color(MISS_COLOR.getRGB());
 	}
 
 	@Override
 	public Color getShipColor() {
-		return SHIP_COLOR;
+		return new Color(SHIP_COLOR.getRGB());
 	}
 
 	@Override
 	public Color getHitColor() {
-		return HIT_COLOR;
+		return new Color(HIT_COLOR.getRGB());
 	}
 
 	@Override
 	public Color getKillColor() {
-		return KILL_COLOR;
+		return new Color(KILL_COLOR.getRGB());
 	}
 }

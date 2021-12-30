@@ -11,13 +11,13 @@ import justacommonguy.battleshipgui.utils.Result;
 
 public abstract class Cell extends JPanel implements MouseListener, HighlightListener {
 
-	public static final Color DEFAULT = new Color (35, 40, 48);
+	private static final Color DEFAULT = new Color (35, 40, 48);
+	
+	private final HighlightInitiator xInitiator;
+	private final HighlightInitiator yInitiator;
+	private boolean isHighlighted;
 	protected Color oldColor = DEFAULT;
 	protected final ShipLocation location;
-
-	private HighlightInitiator xInitiator;
-	private HighlightInitiator yInitiator;
-	private boolean isHighlighted;
 
 	public Cell(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit) {
 		addMouseListener(this);
@@ -34,6 +34,7 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 		setBackground(color);
 	}
 
+	// ? Move this somewhere else
 	// TODO. Instead of using colors for miss, paint crosses over the panel.
 	public void updateState(Result result) {
 		switch (result) {
@@ -68,9 +69,8 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 	}
 
 	@Override
-	public void mouseExited(MouseEvent e) {
-		xInitiator.unfire();
-		yInitiator.unfire();
+	public void cellHighlighted() {
+		highlight(15);
 	}
 
 	/** Fixes the increment if it would make the new highlighting values illegal. */
@@ -95,19 +95,20 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 				oldColor.getBlue() + increment));
 	}
 
-	public void unhighlight() {
-		isHighlighted = false;
-		setBackground(oldColor);
-	}
-
-	@Override
-	public void cellHighlighted() {
-		highlight(15);
-	}
-
 	@Override
 	public void cellUnhighlighted() {
 		unhighlight();
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		xInitiator.unfire();
+		yInitiator.unfire();
+	}
+
+	public void unhighlight() {
+		isHighlighted = false;
+		setBackground(oldColor);
 	}
 
 	public ShipLocation getShipLocation() {
@@ -116,6 +117,10 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 
 	public boolean isHighlighted() {
 		return isHighlighted;
+	}
+
+	public Color getDefaultColor() {
+		return new Color(DEFAULT.getRGB());
 	}
 
 	abstract public Color getMissColor();

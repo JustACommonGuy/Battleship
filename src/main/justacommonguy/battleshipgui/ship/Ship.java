@@ -12,18 +12,17 @@ public class Ship {
 		Y,
 	}
 
+	/** Array for all ship sizes. The order must match with 
+	 * {@link Ship#SHIP_NAMES SHIP_NAMES}.*/
+	static final int[] SHIP_SIZES = {2, 3, 3, 4, 5};
 	/** String array for all ship names. The order must match with 
 	 * {@link Ship#SHIP_SIZES SHIP_SIZES}. 
 	 * Submarine is not used since that would overcomplicate toString().*/
 	private static final String[] SHIP_NAMES = 
 			{"Destroyer", "Cruiser", "Submarine", "Battleship", "Carrier"};
-
-	/** Array for all ship sizes. The order must match with 
-	 * {@link Ship#SHIP_NAMES SHIP_NAMES}.*/
-	public static final int[] SHIP_SIZES = {2, 3, 3, 4, 5};
 	
 	private ArrayList<ShipLocation> locations = new ArrayList<ShipLocation>();
-	private int size;
+	private final int size;
 
 
 	private Ship(ArrayList<ShipLocation> locations) {

@@ -12,7 +12,7 @@ import java.util.Properties;
 
 public class Settings {
 
-	public static Settings gameSettings = new Settings(new File("settings.properties"));
+	public static final Settings gameSettings = new Settings(new File("settings.properties"));
 
 	private static final String SERVER_PORT = "1337";
 	private static final String IP_ADDRESS = "";
@@ -25,8 +25,8 @@ public class Settings {
 	private static final String HIT = "200,100,30";
 	private static final String KILL = "150,30,30";
 	
-	private Properties properties = new Properties();
-	private File file;
+	private final Properties properties = new Properties();
+	private final File file;
 	
 	public Settings(File file) {
 		this.file = file;
@@ -75,7 +75,7 @@ public class Settings {
 		}
 	}
 
-	public static Color stringToColor(String s) {
+	private static Color stringToColor(String s) {
 		String[] colorArray = s.split(",");
 		int red = Integer.parseInt(colorArray[0]);
 		int green = Integer.parseInt(colorArray[1]);
@@ -84,15 +84,15 @@ public class Settings {
 		return new Color(red, green, blue);
 	}
 
+	public void setSetting(String key, String value) {
+		properties.setProperty(key, value);
+	}
+
 	public String getSetting(String key) {
 		return properties.getProperty(key);
 	}
 
 	public Color getColor(String key) {
 		return stringToColor(properties.getProperty(key));
-	}
-
-	public void setSetting(String key, String value) {
-		properties.setProperty(key, value);
 	}
 }

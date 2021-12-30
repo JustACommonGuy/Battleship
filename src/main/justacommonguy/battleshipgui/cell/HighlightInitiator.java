@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class HighlightInitiator {
 	
-	private ArrayList<HighlightListener> listeners = new ArrayList<HighlightListener>();
+	private final ArrayList<HighlightListener> listeners = new ArrayList<HighlightListener>();
 
 	public void addHighlightListener(HighlightListener listener) {
 		listeners.add(listener);

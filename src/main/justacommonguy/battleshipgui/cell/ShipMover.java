@@ -13,7 +13,7 @@ public class ShipMover {
 	private ShipLocation newLocation;
 	private ShipLocation oldLocation;
 
-	public ShipMover(AllyCell oldCell) {
+	ShipMover(AllyCell oldCell) {
 		if (oldCell == null) {
 			throw new IllegalArgumentException("AllyCell must not be null.");
 		}

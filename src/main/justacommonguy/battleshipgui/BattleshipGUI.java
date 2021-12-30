@@ -4,6 +4,7 @@ import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -44,6 +45,10 @@ public class BattleshipGUI implements GUI {
 			Toolkit.getDefaultToolkit().getScreenSize().getHeight();
 	public static final double X_RESOLUTION =
 			Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+	/** GridLayout does not allow for specific cell sizes, so we set a global
+		size to display squared cells. */
+	private static final Dimension PANEL_SIZE = new Dimension(
+			(int) ( BattleshipGUI.Y_RESOLUTION / 3), (int) (BattleshipGUI.Y_RESOLUTION / 3));
 	
 	private String enemyName = "OPPONENT";
 	private AllyMap allyMap = new AllyMap();
@@ -95,8 +100,8 @@ public class BattleshipGUI implements GUI {
 		JPanel playArea = new JPanel(new GridBagLayout());
 		Font bold = new Font(Font.SANS_SERIF, Font.BOLD, 20);
 
-		allyMapPanel = allyMap.makeMap();
-		enemyMapPanel = enemyMap.makeMap();
+		allyMapPanel = allyMap.makeMap(PANEL_SIZE);
+		enemyMapPanel = enemyMap.makeMap(PANEL_SIZE);
 		JLabel gridLabel = new JLabel("YOUR GRID");
 		enemyGridLabel = new JLabel(enemyName + "'S GRID");
 		gridLabel.setFont(bold);

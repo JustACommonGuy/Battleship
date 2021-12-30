@@ -12,21 +12,17 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import justacommonguy.battleshipgui.BattleshipGUI;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
 public abstract class Map<T extends Cell> {
+
 	// The height and the width need to have an extra column or row for the letters and numbers.
 	public static final int HEIGHT = 11;
 	public static final int WIDTH = 11;
 
 	private static final int GRID_GAP = Integer.parseInt(gameSettings.getSetting("grid_gap"));
-	/** GridLayout does not allow for specific cell sizes, so we set a global
-		size to display squared cells. */
-	private static final Dimension PANEL_SIZE = new Dimension(
-			(int) ( BattleshipGUI.Y_RESOLUTION / 3), (int) (BattleshipGUI.Y_RESOLUTION / 3));
 
-	private HashMap<ShipLocation, T> cellList = new HashMap<ShipLocation, T>();
+	private final HashMap<ShipLocation, T> cellList = new HashMap<ShipLocation, T>();
 
 	public T getCell(ShipLocation location) {
 		//// if (!cellList.containsKey(location)) {
@@ -54,7 +50,7 @@ public abstract class Map<T extends Cell> {
 
 	/* In a perfect world this method would be in a dedicated class and split into several
 	methods, but after an hour of pain and suffering I just give up. */
-	public JPanel makeMap() {
+	public JPanel makeMap(Dimension size) {
 		if (!cellList.isEmpty()) {
 			System.out.println("Map has already been created.");
 			return null;
@@ -64,7 +60,7 @@ public abstract class Map<T extends Cell> {
 		grid.setVgap(GRID_GAP);
 		grid.setHgap(GRID_GAP);
 		JPanel map = new JPanel(grid);
-		map.setPreferredSize(PANEL_SIZE);
+		map.setPreferredSize(size);
 		map.setBorder(BorderFactory.createLineBorder(Color.WHITE));
 		
 		int cellX = 0;

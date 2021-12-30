@@ -8,5 +8,4 @@ public class EnemyMap extends Map<EnemyCell> {
 	protected EnemyCell constructCell(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit) {
 		return new EnemyCell(location, xInit, yInit);
 	}
-	
 }
