@@ -7,36 +7,37 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import justacommonguy.battleshipgui.cell.Map;
+import justacommonguy.battleshipgui.cell.EnemyMap;
+import justacommonguy.battleshipgui.cell.AllyMap;
 import justacommonguy.battleshipgui.player.Player;
-import justacommonguy.battleshipgui.ship.Ship;
-import justacommonguy.battleshipgui.ship.ShipBuilder;
 import justacommonguy.battleshipgui.ship.ShipLocation;
-import justacommonguy.battleshipgui.utils.Faction;
-import justacommonguy.battleshipgui.utils.Result;
 
+/** Introducing... the disgusting god object class that runs the game. 
+ * Just reading the outline makes me want to throw up, but I can't think of a proper design.
+*/
 public class GameClient implements NetworkComponent {
 
 	private BattleshipGUI gui = new BattleshipGUI(this);
-	private GameServer server = new GameServer(this);
+	private GameServer server;
 	
 	private Player player;
 	// ? Only the enemy's name might be needed
 	private Player enemy;
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
-	private ArrayList<Ship> shipList = new ArrayList<Ship>();
+
+	private AllyMap allyMap = new AllyMap();
+	private EnemyMap enemyMap = new EnemyMap();
 
 	public static void main(String[] args) {
 		try {
 			UIManager.setLookAndFeel(new FlatSpacegrayIJTheme());
 		}
-		catch (Exception ex) {
+		catch (Exception e) {
 			System.out.println("Failed to set LaF");
 		}
 
@@ -48,11 +49,11 @@ public class GameClient implements NetworkComponent {
 		new GameClient(args[0]).start();
 	}
 
-	public GameClient(String hostUsername) {
-		// TODO
+	private GameClient(String hostUsername) {
+		// ? Add a separate GUI class in config to process settings
 		if (gameSettings.getSetting("username").equals("")) {
 			if (hostUsername == null) {
-				hostUsername = gui.askName();
+				hostUsername = BattleshipGUI.askName();
 			}
 			gameSettings.setSetting("username", hostUsername);
 			gameSettings.saveSettings();
@@ -63,18 +64,13 @@ public class GameClient implements NetworkComponent {
 
 	public void start() {
 		gui.start(JFrame.EXIT_ON_CLOSE);
-		shipList = buildShips();
-		gui.addShips(shipList);
-	}
-
-	private ArrayList<Ship> buildShips() {
-		ArrayList<Ship> ships = new ArrayList<Ship>();
-		ships = new ShipBuilder(Map.HEIGHT, Map.WIDTH).buildShipsRandomly();
-		// ShipMover needs access to the player's fleet.
-		return ships;
+		gui.initPlayArea(allyMap, enemyMap);
+		allyMap.buildShips();
+		allyMap.allowInteraction(true);
 	}
 
 	public void hostGame() {
+		server = new GameServer(this);
 		// The server would be stuck waiting, so the GUI goes crazy if I call it in the same thread.
 		new Thread(server, "Server").start();
 	}
@@ -100,76 +96,67 @@ public class GameClient implements NetworkComponent {
 		Object obj;
 		try {
 			while ((obj = ois.readObject()) != null) {
-				Object answer = respondRequest((Request) obj);
+				Object answer = respondRequest((Request) obj, ois.readObject());
 				if (answer != null) {
 					oos.writeObject(answer);
 				}
 			}
 		}
 		catch (IOException | ClassNotFoundException e) {
-			System.out.println("Failed to read object.");
+			System.out.println("Failed to read request or send response.");
 			e.printStackTrace();
 		}
-		
 	}
 
 	@Override
-	public Object respondRequest(Request request) {
-		try {
-			System.out.println("Received " + request + " request.");
-			switch (request) {
-				case ATTACK:
-					ShipLocation attackLocation = getAttack();
-					System.out.println("Sending " + attackLocation);
-					return attackLocation;
-				case ATTACK_RESULT:
-					updateMap((ShipLocation) ois.readObject(), (Result) ois.readObject(), (Faction) ois.readObject());
-					break;
-				case FINISH:
-					finish((String) ois.readObject());
-					break;
-				case PLACE_SHIPS:
-					System.out.println("Sending ships.");
-					allowShipPlacement();
-				case SEND_PLAYER:
-					System.out.println("Sending " + player);
-					return getPlayer();
-				case START:
-					startGame((String) ois.readObject());
-					break;
-			}
-		}
-		catch (ClassNotFoundException | IOException e) {
-			System.out.println("Failed to respond server requests.");
+	public Object respondRequest(Request request, Object message) {
+		System.out.println("Received " + request + " request.");
+		switch (request) {
+			case SEND_PLAYER:
+				System.out.println("Sending " + player);
+				return getPlayer();
+			case START:
+				startGame((String) message);
+				break;
+			case PLACE_SHIPS:
+				System.out.println("Sending ships.");
+				gui.allowPlacement(true);
+				return allyMap.sendShips();
+			case ATTACK:
+				gui.allowAttack(true);
+				ShipLocation attackLocation = enemyMap.sendAttackGuess();
+				System.out.println("Sending " + attackLocation);
+				return attackLocation;
+			case ATTACK_ALLY:
+				Attack enemyAttack = (Attack) message;
+				enemyAttack.updateMap(allyMap);
+				gui.updateAttackLabel(enemyAttack.getResult().toString(), 1500);
+				System.out.println("Updated " + allyMap + ": " + enemyAttack);
+				break;
+			case ATTACK_ENEMY:
+				Attack allyAttack = (Attack) message;
+				allyAttack.updateMap(enemyMap);
+				gui.updateAttackLabel(allyAttack.getResult().toString(), 1500);
+				System.out.println("Updated" + enemyMap + ": " + allyAttack);
+				break;
+			case FINISH:
+				finish((String) message);
+				break;
 		}
 		
 		return null;
 	}
 	
-	public Player getPlayer() {
+	private Player getPlayer() {
 		return (Player) player.clone();
 	}
 
-	public void startGame(String enemyName) {
+	private void startGame(String enemyName) {
 		enemy.setName(enemyName);
 		gui.startGame(enemyName);
 	}
 
-	public void allowShipPlacement() {
-		// TODO
-	}
-
-	public ShipLocation getAttack() {
-		//TODO
-		return null;
-	}
-
-	public void updateMap(ShipLocation guess, Result result, Faction factionAttacked) {
-		//TODO
-		System.out.println("Updated user map. Guess Location: " + guess + ". Result: " + result);
-	}
-
-	public void finish(String winner) {
+	private void finish(String winner) {
 		//TODO
 		System.out.println("Finished the game. Winner is " + winner);
 	}

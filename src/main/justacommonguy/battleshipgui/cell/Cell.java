@@ -7,7 +7,6 @@ import java.awt.event.MouseListener;
 import javax.swing.JPanel;
 
 import justacommonguy.battleshipgui.ship.ShipLocation;
-import justacommonguy.battleshipgui.utils.Result;
 
 public abstract class Cell extends JPanel implements MouseListener, HighlightListener {
 
@@ -34,22 +33,6 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 		setBackground(color);
 	}
 
-	// ? Move this somewhere else
-	// TODO. Instead of using colors for miss, paint crosses over the panel.
-	public void updateState(Result result) {
-		switch (result) {
-			case HIT:
-				setCellColor(getHitColor());
-				break;
-			case KILL:
-				setCellColor(getKillColor());
-				break;
-			case MISS:
-				setCellColor(getMissColor());
-				break;
-		}
-	}
-
 	@Override
 	public void mouseClicked(MouseEvent e) {}
 	@Override
@@ -74,7 +57,7 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 	}
 
 	/** Fixes the increment if it would make the new highlighting values illegal. */
-	public int fixIncrement(int increment, Color color) {
+	public static int fixIncrement(int increment, Color color) {
 		int[] rgb = {color.getRed(), color.getGreen(), color.getBlue()};
 
 		for (int value : rgb) {
@@ -88,7 +71,7 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 		return increment;
 	}
 
-	public void highlight(int increment) {
+	private void highlight(int increment) {
 		isHighlighted = true;
 		increment = fixIncrement(increment, oldColor);
 		setBackground(new Color(oldColor.getRed() + increment, oldColor.getGreen() + increment, 
@@ -106,7 +89,7 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 		yInitiator.unfire();
 	}
 
-	public void unhighlight() {
+	private void unhighlight() {
 		isHighlighted = false;
 		setBackground(oldColor);
 	}

@@ -15,7 +15,7 @@ public class ShipBuilder {
 	}
 
 	public ArrayList<Ship> buildShipsRandomly() {
-		shipList = new ArrayList<Ship>();
+		shipList = new ArrayList<>();
 		try {
 			for (int size : Ship.SHIP_SIZES) {
 				Ship randomShip = null;
@@ -49,7 +49,7 @@ public class ShipBuilder {
 			throw new IllegalArgumentException("Location must not be null.");
 		}
 		for (Ship existingShip : shipList) {
-			if (existingShip.getLocations().contains(location)) {
+			if (existingShip.hasLocation(location)) {
 				return true;
 			}
 		}

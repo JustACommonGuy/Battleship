@@ -1,18 +1,30 @@
 package justacommonguy.battleshipgui.cell;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import justacommonguy.battleshipgui.ship.Ship;
+import justacommonguy.battleshipgui.ship.ShipBuilder;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
-public class AllyMap extends Map<AllyCell> {
+public class AllyMap extends Map<AllyCell> implements ActionListener {
+
+	private ArrayList<Ship> shipList;
+	private CountDownLatch latch = new CountDownLatch(1);
 
 	@Override
 	protected AllyCell constructCell(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit) {
 		return new AllyCell(location, xInit, yInit);
 	}
 	
-	public void placeShips(ArrayList<Ship> shipList) {
+	public void buildShips() {
+		shipList = new ShipBuilder(Map.HEIGHT, Map.WIDTH).buildShipsRandomly();
+		placeShips(shipList);
+	}
+	
+	private void placeShips(ArrayList<Ship> shipList) {
 		for (Ship ship : shipList) {
 			for (ShipLocation location : ship.getLocations()) {
 				AllyCell cell = getCell(location);
@@ -27,5 +39,42 @@ public class AllyMap extends Map<AllyCell> {
 			return null;
 		}
 		return getCellList(cell.getShip().getLocations());
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		latch.countDown();
+	}
+
+	public synchronized ArrayList<Ship> sendShips() {
+		if (shipList == null) {
+			throw new RuntimeException("Ships have already been sent.");
+		}
+
+		try {
+			latch.await();
+		}
+		catch (InterruptedException e) {}
+
+		ArrayList<Ship> shipListClone = new ArrayList<>();
+		for (Ship ship : shipList) {
+			shipListClone.add(ship.clone());
+		}
+		// Get rid of the list because only the server needs it.
+		shipList = null;
+		allowInteraction(false);
+		return shipListClone;
+	}
+
+	@Override
+	public void allowInteraction(boolean allow) {
+		// ShipMover needs access to the player's fleet.
+		ShipMover.setMap(allow ? this : null);
+		AllyCell.setPlacementAllowed(allow);
+	}
+
+	@Override
+	public String toString() {
+		return "AllyMap";
 	}
 }

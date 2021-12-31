@@ -12,7 +12,6 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -24,10 +23,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import justacommonguy.battleshipgui.cell.AllyMap;
 import justacommonguy.battleshipgui.cell.EnemyMap;
-import justacommonguy.battleshipgui.cell.ShipMover;
-import justacommonguy.battleshipgui.ship.Ship;
+import justacommonguy.battleshipgui.cell.AllyMap;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
@@ -48,15 +45,19 @@ public class BattleshipGUI implements GUI {
 	/** GridLayout does not allow for specific cell sizes, so we set a global
 		size to display squared cells. */
 	private static final Dimension PANEL_SIZE = new Dimension(
-			(int) ( BattleshipGUI.Y_RESOLUTION / 3), (int) (BattleshipGUI.Y_RESOLUTION / 3));
+			(int) ( Y_RESOLUTION / 3), (int) (Y_RESOLUTION / 3));
 	
 	private String enemyName = "OPPONENT";
-	private AllyMap allyMap = new AllyMap();
-	private EnemyMap enemyMap = new EnemyMap();
 
 	private JFrame frame = new JFrame();
+	private JPanel playArea = new JPanel(new GridBagLayout());
 	private JPanel allyMapPanel;
+	private JButton sendShipsButton;
 	private JPanel enemyMapPanel;
+	private JButton sendAttackGuessButton;
+	private JLabel attackLabel;
+	// TODO Change label according to settings ("your" or "name's")
+	private JLabel gridLabel;
 	private JLabel enemyGridLabel;
 	//TODO. Change this panel when game has started.
 	private JPanel buttonPanel;
@@ -67,7 +68,7 @@ public class BattleshipGUI implements GUI {
 		this.client = client;
 	}
 
-	public String askName() {
+	public static String askName() {
 		JOptionPane popup = new JOptionPane("Please input your username.", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION);
 		popup.setWantsInput(true);
 		JDialog dialog = popup.createDialog(new JFrame(), "Welcome");
@@ -95,29 +96,8 @@ public class BattleshipGUI implements GUI {
 		GUI might blow up in displays that do not have 16:9 resolutions. */
 		SwingUtils.setUpJFrame(frame, (int) ((0.75) * X_RESOLUTION), (int) ((0.75) * Y_RESOLUTION));
 
-		GridBagConstraints gbc = new GridBagConstraints();
-		Insets insets = new Insets(3, 3, 3, 3);
-		JPanel playArea = new JPanel(new GridBagLayout());
-		Font bold = new Font(Font.SANS_SERIF, Font.BOLD, 20);
-
-		allyMapPanel = allyMap.makeMap(PANEL_SIZE);
-		enemyMapPanel = enemyMap.makeMap(PANEL_SIZE);
-		JLabel gridLabel = new JLabel("YOUR GRID");
-		enemyGridLabel = new JLabel(enemyName + "'S GRID");
-		gridLabel.setFont(bold);
-		enemyGridLabel.setFont(bold);
-
-		SwingUtils.setGridBagConstraintsValues(gbc, 0, 0, 0, 0, insets);
-		playArea.add(gridLabel, gbc);
-		SwingUtils.setGridBagConstraintsValues(gbc, 1, 0, 0, 0, insets);
-		playArea.add(enemyGridLabel, gbc);
-		SwingUtils.setGridBagConstraintsValues(gbc, 0, 1, 0, 0, insets);
-		playArea.add(allyMapPanel, gbc);
-		SwingUtils.setGridBagConstraintsValues(gbc, 1, 1, 0, 0, insets);
-		playArea.add(enemyMapPanel, gbc);
 		JPanel eastPanel = new JPanel();
 		eastPanel.add(playArea);
-
 
 		JPanel westPanel = new JPanel();
 		westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.Y_AXIS));
@@ -143,7 +123,44 @@ public class BattleshipGUI implements GUI {
 		SwingUtils.frameToFront(frame);
 	}
 
-	public class HostGameListener implements ActionListener {
+	public void initPlayArea(AllyMap allyMap, EnemyMap enemyMap) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		Insets insets = new Insets(3, 3, 3, 3);
+		Font bold = new Font(Font.SANS_SERIF, Font.BOLD, 20);
+
+		allyMapPanel = allyMap.makeMap(PANEL_SIZE);
+		sendShipsButton = new JButton("Confirm ship placement.");
+		sendShipsButton.addActionListener(allyMap);
+		sendShipsButton.addActionListener(new SendShipsListener());
+		allowPlacement(false);
+
+		enemyMapPanel = enemyMap.makeMap(PANEL_SIZE);
+		attackLabel = new JLabel();
+		sendAttackGuessButton = new JButton("Confirm attack.");
+		sendAttackGuessButton.addActionListener(enemyMap);
+		sendAttackGuessButton.addActionListener(new sendAttackGuessListener());
+		allowAttack(false);
+		
+		gridLabel = new JLabel("YOUR GRID");
+		enemyGridLabel = new JLabel(enemyName + "'S GRID");
+		gridLabel.setFont(bold);
+		enemyGridLabel.setFont(bold);
+
+		SwingUtils.setGridBagConstraintsValues(gbc, 0, 0, 0, 0, insets);
+		playArea.add(gridLabel, gbc);
+		SwingUtils.setGridBagConstraintsValues(gbc, 1, 0, 0, 0, insets);
+		playArea.add(enemyGridLabel, gbc);
+		SwingUtils.setGridBagConstraintsValues(gbc, 0, 1, 0, 0, insets);
+		playArea.add(allyMapPanel, gbc);
+		SwingUtils.setGridBagConstraintsValues(gbc, 1, 1, 0, 0, insets);
+		playArea.add(enemyMapPanel, gbc);
+		SwingUtils.setGridBagConstraintsValues(gbc, 0, 2, 0, 0, insets);
+		playArea.add(sendShipsButton);
+		SwingUtils.setGridBagConstraintsValues(gbc, 1, 2, 0, 0, insets);
+		playArea.add(sendAttackGuessButton);
+	}
+
+	private class HostGameListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -151,7 +168,7 @@ public class BattleshipGUI implements GUI {
 		}
 	}
 
-	public class JoinGameListener implements ActionListener {
+	private class JoinGameListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -185,12 +202,43 @@ public class BattleshipGUI implements GUI {
 		}
 	}
 
-	public void addShips(ArrayList<Ship> shipList) {
-		allyMap.placeShips(shipList);
-		ShipMover.setMap(allyMap);
-	}
-
 	public void startGame(String enemyName) {
 		enemyGridLabel.setText(enemyName + "'S GRID");
+	}
+
+	private class SendShipsListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			allowPlacement(false);
+		}
+	}
+
+	public void allowPlacement(boolean allow) {
+		sendShipsButton.setVisible(allow);
+	}
+
+	private class sendAttackGuessListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			allowAttack(false);
+		}
+	}
+
+	public void allowAttack(boolean allow) {
+		sendAttackGuessButton.setVisible(allow);
+		attackLabel.setText(allow ? "Select a cell to attack..." : "");
+	}
+
+	public void updateAttackLabel(String text, int millis) {
+		new Thread(() -> {
+			attackLabel.setText(text);
+			try {
+				Thread.sleep(millis);
+			}
+			catch (InterruptedException e) {}
+			attackLabel.setText("");
+		}, "AttackLabelUpdate").start();
 	}
 }

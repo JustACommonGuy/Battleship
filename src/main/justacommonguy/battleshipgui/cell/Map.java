@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import justacommonguy.battleshipgui.ship.ShipLocation;
+import justacommonguy.battleshipgui.utils.Result;
 
 public abstract class Map<T extends Cell> {
 
@@ -22,12 +23,9 @@ public abstract class Map<T extends Cell> {
 
 	private static final int GRID_GAP = Integer.parseInt(gameSettings.getSetting("grid_gap"));
 
-	private final HashMap<ShipLocation, T> cellList = new HashMap<ShipLocation, T>();
+	private final HashMap<ShipLocation, T> cellList = new HashMap<>();
 
 	public T getCell(ShipLocation location) {
-		//// if (!cellList.containsKey(location)) {
-		//// 	System.out.println("Ouch. " + location);
-		//// }
 		return cellList.get(location);
 	}
 
@@ -35,7 +33,7 @@ public abstract class Map<T extends Cell> {
 		if (locationList == null) {
 			return null;
 		}
-		ArrayList<T> cellList = new ArrayList<T>();
+		ArrayList<T> cellList = new ArrayList<>();
 		
 		for (ShipLocation location : locationList) {
 			T cell = getCell(location);
@@ -48,8 +46,27 @@ public abstract class Map<T extends Cell> {
 		return cellList;
 	}
 
+	/** The map doesn't know if the location is going to be a hit in {@link EnemyMap} */
+	public void attackCell(ShipLocation location, Result result) {
+		//// System.out.println("Attacked: " + location);
+		T cell = getCell(location);
+
+		// TODO. Instead of using colors for miss, paint crosses over the panel.
+		switch (result) {
+			case HIT:
+				cell.setCellColor(cell.getHitColor());
+				break;
+			case KILL:
+				cell.setCellColor(cell.getKillColor());
+				break;
+			case MISS:
+				cell.setCellColor(cell.getMissColor());
+				break;
+		}
+	}
+
 	/* In a perfect world this method would be in a dedicated class and split into several
-	methods, but after an hour of pain and suffering I just give up. */
+	methods, but I failed to achieve this after an hour of pain and suffering. I give up. */
 	public JPanel makeMap(Dimension size) {
 		if (!cellList.isEmpty()) {
 			System.out.println("Map has already been created.");
@@ -125,4 +142,6 @@ public abstract class Map<T extends Cell> {
 	}
 
 	protected abstract T constructCell(ShipLocation location, HighlightInitiator xInit, HighlightInitiator yInit);
+	
+	public abstract void allowInteraction(boolean allow);
 }

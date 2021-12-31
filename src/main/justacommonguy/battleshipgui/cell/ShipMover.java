@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
-public class ShipMover {
+class ShipMover {
 	
 	private static AllyMap map;
 	private ArrayList<AllyCell> oldCellList;
@@ -27,9 +27,8 @@ public class ShipMover {
 		newLocation = oldCell.getShipLocation();
 	}
 
-	/* Huh. 'this' cannot be used for static setters. */
-	public static void setMap(AllyMap newMap) {
-		map = newMap;
+	public static void setMap(AllyMap map) {
+		ShipMover.map = map;
 	} 
 
 	public void drag() {

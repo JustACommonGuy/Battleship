@@ -19,7 +19,7 @@ public class Player implements Serializable, Cloneable {
 		try {
 			return super.clone();
 		}
-		catch (CloneNotSupportedException ex) {
+		catch (CloneNotSupportedException e) {
 			throw new RuntimeException("Could not clone player.");
 		}
 	}

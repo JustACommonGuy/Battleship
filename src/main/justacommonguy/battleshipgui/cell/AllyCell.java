@@ -10,7 +10,7 @@ import java.awt.event.MouseWheelListener;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
-public class AllyCell extends Cell implements MouseWheelListener {
+class AllyCell extends Cell implements MouseWheelListener {
 
 	private static boolean placementAllowed;
 	private static ShipMover mover;
@@ -99,8 +99,8 @@ public class AllyCell extends Cell implements MouseWheelListener {
 		return ship;
 	}
 
-	static void setPlacementAllowed(boolean newPlacementAllowed) {
-		placementAllowed = newPlacementAllowed;
+	static void setPlacementAllowed(boolean placementAllowed) {
+		AllyCell.placementAllowed = placementAllowed;
 	}
 
 	@Override

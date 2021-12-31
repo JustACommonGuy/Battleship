@@ -1,11 +1,12 @@
 package justacommonguy.battleshipgui.ship;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
 import justacommonguy.battleshipgui.utils.Result;
 
-public class Ship {
+public class Ship implements Serializable, Cloneable {
 
 	private enum Axis {
 		X,
@@ -21,7 +22,7 @@ public class Ship {
 	private static final String[] SHIP_NAMES = 
 			{"Destroyer", "Cruiser", "Submarine", "Battleship", "Carrier"};
 	
-	private ArrayList<ShipLocation> locations = new ArrayList<ShipLocation>();
+	private ArrayList<ShipLocation> locations = new ArrayList<>();
 	private final int size;
 
 
@@ -35,7 +36,7 @@ public class Ship {
 	}
 
 	public static Ship getRandomShip(int shipSize, int height, int width) throws RandomShipFailure {
-		ArrayList<ShipLocation> locations = new ArrayList<ShipLocation>();
+		ArrayList<ShipLocation> locations = new ArrayList<>();
 		ShipLocation location = null;
 		int attemptsCount = 0;
 		boolean isSuccessful = false;
@@ -96,6 +97,14 @@ public class Ship {
 		return null;
 	}
 
+	public Ship clone() {
+		ArrayList<ShipLocation> locationsClone = new ArrayList<>();
+		for (ShipLocation location : locations) {
+			locationsClone.add(location);
+		}
+		return new Ship(locationsClone);
+	}
+
 	public ArrayList<ShipLocation> getDraggedLocations(ShipLocation oldLoc, ShipLocation newLoc) {
 		if (!locations.contains(oldLoc)) {
 			throw new IllegalArgumentException("OldLoc does not match with Ship's old location.");
@@ -103,7 +112,7 @@ public class Ship {
 		
 		int xChange = newLoc.getX() - oldLoc.getX();
 		int yChange = newLoc.getY() - oldLoc.getY();
-		ArrayList<ShipLocation> newLocations = new ArrayList<ShipLocation>();
+		ArrayList<ShipLocation> newLocations = new ArrayList<>();
 
 		//// System.out.println("");
 		for (ShipLocation loc : locations) {
@@ -128,7 +137,7 @@ public class Ship {
 		
 		//// System.out.println("");
 		try {
-			ArrayList<ShipLocation> newLocations = new ArrayList<ShipLocation>();
+			ArrayList<ShipLocation> newLocations = new ArrayList<>();
 			for (ShipLocation loc : locations) {
 				int xChange = loc.getX() - center.getX();
 				int yChange = loc.getY() - center.getY();
@@ -140,7 +149,7 @@ public class Ship {
 			}
 			return newLocations;
 		}
-		catch (IllegalArgumentException | NullPointerException ex) {
+		catch (IllegalArgumentException | NullPointerException e) {
 			return null;
 		}
 	}
@@ -152,7 +161,7 @@ public class Ship {
 			result = Result.HIT;
 			locations.remove(attackedLocation);
 		}
-
+		System.out.println(toString() + " length " + locations.size());
 		if (locations.isEmpty()) {
 			result = Result.KILL;
 		}
@@ -169,5 +178,12 @@ public class Ship {
 
 	public ArrayList<ShipLocation> getLocations() {
 		return new ArrayList<ShipLocation>(locations);
+	}
+
+	public boolean hasLocation(ShipLocation location) {
+		if (locations.contains(location)) {
+			return true;
+		}
+		return false;
 	}
 }
