@@ -1,4 +1,4 @@
-package justacommonguy.battleshipgui.cell;
+package justacommonguy.battleshipgui.cell.Ally;
 
 import java.util.ArrayList;
 
@@ -13,7 +13,7 @@ class ShipMover {
 	private ShipLocation newLocation;
 	private ShipLocation oldLocation;
 
-	ShipMover(AllyCell oldCell) {
+	public ShipMover(AllyCell oldCell) {
 		if (oldCell == null) {
 			throw new IllegalArgumentException("AllyCell must not be null.");
 		}
@@ -117,7 +117,7 @@ class ShipMover {
 
 	/** Placement is not valid if new locations are out of bounds (negative coords or not found), 
 	* or if the cells are already occupied. */
-	public boolean areCellsValid(ArrayList<AllyCell> cells) {
+	private boolean areCellsValid(ArrayList<AllyCell> cells) {
 		boolean isValid = true;
 		if (cells == null) {
 			return false;

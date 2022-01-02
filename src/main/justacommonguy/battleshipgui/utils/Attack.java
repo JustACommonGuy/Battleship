@@ -1,12 +1,11 @@
-package justacommonguy.battleshipgui;
+package justacommonguy.battleshipgui.utils;
 
 import java.io.Serializable;
 
 import justacommonguy.battleshipgui.cell.Map;
 import justacommonguy.battleshipgui.ship.ShipLocation;
-import justacommonguy.battleshipgui.utils.Result;
 
-class Attack implements Serializable {
+public class Attack implements Serializable {
 	
 	private final ShipLocation guess;
 	private final Result result;

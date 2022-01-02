@@ -1,4 +1,4 @@
-package justacommonguy.battleshipgui.cell;
+package justacommonguy.battleshipgui.cell.Ally;
 
 import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
@@ -7,6 +7,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
+import justacommonguy.battleshipgui.cell.Cell;
+import justacommonguy.battleshipgui.cell.HighlightInitiator;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 

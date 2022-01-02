@@ -1,12 +1,12 @@
-package justacommonguy.battleshipgui.cell;
+package justacommonguy.battleshipgui.cell.Enemy;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.concurrent.CountDownLatch;
 
+import justacommonguy.battleshipgui.cell.HighlightInitiator;
+import justacommonguy.battleshipgui.cell.Map;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
-public class EnemyMap extends Map<EnemyCell> implements AttackListener, ActionListener {
+public class EnemyMap extends Map<EnemyCell> implements AttackListener {
 
 	private Attacker attacker = new Attacker();
 	private ShipLocation attackGuess;
@@ -27,12 +27,7 @@ public class EnemyMap extends Map<EnemyCell> implements AttackListener, ActionLi
 		EnemyCell.setAttackAllowed(allow);
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		latch.countDown();
-	}
-
-	public synchronized ShipLocation sendAttackGuess() {
+	public ShipLocation sendAttackGuess() {
 		allowInteraction(true);
 		latch = new CountDownLatch(1);
 		
@@ -42,13 +37,18 @@ public class EnemyMap extends Map<EnemyCell> implements AttackListener, ActionLi
 		catch (InterruptedException e) {}
 
 		allowInteraction(false);
-		return attackGuess;
+		ShipLocation guess = attackGuess;
+		attackGuess = null;
+		return guess;
 	}
 
 	@Override
 	public void attacked(ShipLocation attackGuess) {
-		this.attackGuess = attackGuess;
-		//// System.out.println("Selected " + attackGuess);
+		if (attackGuess != null) {
+			this.attackGuess = attackGuess;
+			latch.countDown();
+			//// System.out.println("Selected " + attackGuess);
+		}
 	}
 
 	@Override

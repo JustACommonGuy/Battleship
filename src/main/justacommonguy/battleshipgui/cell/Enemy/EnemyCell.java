@@ -1,10 +1,12 @@
-package justacommonguy.battleshipgui.cell;
+package justacommonguy.battleshipgui.cell.Enemy;
 
 import static justacommonguy.battleshipgui.config.Settings.gameSettings;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 
+import justacommonguy.battleshipgui.cell.Cell;
+import justacommonguy.battleshipgui.cell.HighlightInitiator;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
 class EnemyCell extends Cell {
@@ -31,7 +33,7 @@ class EnemyCell extends Cell {
 		}
 	}
 
-	public static void setAttacker(Attacker attacker) {
+	static void setAttacker(Attacker attacker) {
 		EnemyCell.attacker = attacker;
 	}
 

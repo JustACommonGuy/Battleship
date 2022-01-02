@@ -1,10 +1,12 @@
-package justacommonguy.battleshipgui.cell;
+package justacommonguy.battleshipgui.cell.Ally;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
+import justacommonguy.battleshipgui.cell.HighlightInitiator;
+import justacommonguy.battleshipgui.cell.Map;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipBuilder;
 import justacommonguy.battleshipgui.ship.ShipLocation;
@@ -34,7 +36,7 @@ public class AllyMap extends Map<AllyCell> implements ActionListener {
 	}
 
 	/** Get cells that share the same ship. */
-	public ArrayList<AllyCell> getRelatedCells(AllyCell cell) {
+	ArrayList<AllyCell> getRelatedCells(AllyCell cell) {
 		if (!cell.hasShip()) {
 			return null;
 		}
@@ -46,7 +48,7 @@ public class AllyMap extends Map<AllyCell> implements ActionListener {
 		latch.countDown();
 	}
 
-	public synchronized ArrayList<Ship> sendShips() {
+	public ArrayList<Ship> sendShips() {
 		if (shipList == null) {
 			throw new RuntimeException("Ships have already been sent.");
 		}

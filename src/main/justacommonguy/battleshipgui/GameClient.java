@@ -11,10 +11,13 @@ import java.net.Socket;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import justacommonguy.battleshipgui.cell.EnemyMap;
-import justacommonguy.battleshipgui.cell.AllyMap;
+import justacommonguy.battleshipgui.cell.Ally.AllyMap;
+import justacommonguy.battleshipgui.cell.Enemy.EnemyMap;
+import justacommonguy.battleshipgui.network.NetworkComponent;
+import justacommonguy.battleshipgui.network.Request;
 import justacommonguy.battleshipgui.player.Player;
 import justacommonguy.battleshipgui.ship.ShipLocation;
+import justacommonguy.battleshipgui.utils.Attack;
 
 /** Introducing... the disgusting god object class that runs the game. 
  * Just reading the outline makes me want to throw up, but I can't think of a proper design.
@@ -52,7 +55,7 @@ public class GameClient implements NetworkComponent {
 	private GameClient(String hostUsername) {
 		// ? Add a separate GUI class in config to process settings
 		if (gameSettings.getSetting("username").equals("")) {
-			if (hostUsername == null) {
+			if (hostUsername.equals("")) {
 				hostUsername = BattleshipGUI.askName();
 			}
 			gameSettings.setSetting("username", hostUsername);
@@ -125,18 +128,18 @@ public class GameClient implements NetworkComponent {
 			case ATTACK:
 				gui.allowAttack(true);
 				ShipLocation attackLocation = enemyMap.sendAttackGuess();
-				System.out.println("Sending " + attackLocation);
+				System.out.println("Sending guess: " + attackLocation);
 				return attackLocation;
 			case ATTACK_ALLY:
 				Attack enemyAttack = (Attack) message;
 				enemyAttack.updateMap(allyMap);
-				gui.updateAttackLabel(enemyAttack.getResult().toString(), 1500);
+				gui.updateAttackLabel(enemyAttack.getResult().toString(), 3000);
 				System.out.println("Updated " + allyMap + ": " + enemyAttack);
 				break;
 			case ATTACK_ENEMY:
 				Attack allyAttack = (Attack) message;
 				allyAttack.updateMap(enemyMap);
-				gui.updateAttackLabel(allyAttack.getResult().toString(), 1500);
+				gui.updateAttackLabel(allyAttack.getResult().toString(), 3000);
 				System.out.println("Updated" + enemyMap + ": " + allyAttack);
 				break;
 			case FINISH:

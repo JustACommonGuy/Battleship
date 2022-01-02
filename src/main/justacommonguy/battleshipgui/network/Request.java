@@ -1,4 +1,4 @@
-package justacommonguy.battleshipgui;
+package justacommonguy.battleshipgui.network;
 
 public enum Request {
 	/** Expects {@link justacommonguy.battleshipgui.player.Player Player} */

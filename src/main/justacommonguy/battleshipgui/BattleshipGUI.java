@@ -23,13 +23,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import justacommonguy.battleshipgui.cell.EnemyMap;
-import justacommonguy.battleshipgui.cell.AllyMap;
+import justacommonguy.battleshipgui.cell.Ally.AllyMap;
+import justacommonguy.battleshipgui.cell.Enemy.EnemyMap;
 import justacommonguy.guiutils.GUI;
 import justacommonguy.guiutils.SwingUtils;
 
 // !Should keep this in mind: https://www.oracle.com/java/technologies/javase/codeconventions-fileorganization.html#1852
-// !Move stuff somewhere else to avoid violating single responsibility. Make a separate class for game logic.
 // TODO. Add better exception handling
 // TODO. Add better logging
 //? Add a counter of guesses?
@@ -54,7 +53,6 @@ public class BattleshipGUI implements GUI {
 	private JPanel allyMapPanel;
 	private JButton sendShipsButton;
 	private JPanel enemyMapPanel;
-	private JButton sendAttackGuessButton;
 	private JLabel attackLabel;
 	// TODO Change label according to settings ("your" or "name's")
 	private JLabel gridLabel;
@@ -81,6 +79,9 @@ public class BattleshipGUI implements GUI {
 		// Insist (rather aggressively) on a valid name with recursion.
 		if (name.equals("")) {
 			name = askName();
+		}
+		else if (name.equals("uninitializedValue")) {
+            System.exit(0);
 		}
 		
 		return name;
@@ -136,9 +137,6 @@ public class BattleshipGUI implements GUI {
 
 		enemyMapPanel = enemyMap.makeMap(PANEL_SIZE);
 		attackLabel = new JLabel();
-		sendAttackGuessButton = new JButton("Confirm attack.");
-		sendAttackGuessButton.addActionListener(enemyMap);
-		sendAttackGuessButton.addActionListener(new sendAttackGuessListener());
 		allowAttack(false);
 		
 		gridLabel = new JLabel("YOUR GRID");
@@ -155,9 +153,9 @@ public class BattleshipGUI implements GUI {
 		SwingUtils.setGridBagConstraintsValues(gbc, 1, 1, 0, 0, insets);
 		playArea.add(enemyMapPanel, gbc);
 		SwingUtils.setGridBagConstraintsValues(gbc, 0, 2, 0, 0, insets);
-		playArea.add(sendShipsButton);
+		playArea.add(sendShipsButton, gbc);
 		SwingUtils.setGridBagConstraintsValues(gbc, 1, 2, 0, 0, insets);
-		playArea.add(sendAttackGuessButton);
+		playArea.add(attackLabel, gbc);
 	}
 
 	private class HostGameListener implements ActionListener {
@@ -218,27 +216,22 @@ public class BattleshipGUI implements GUI {
 		sendShipsButton.setVisible(allow);
 	}
 
-	private class sendAttackGuessListener implements ActionListener {
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			allowAttack(false);
+	public void allowAttack(boolean allow) {
+		synchronized (attackLabel) {
+			attackLabel.setText(allow ? "Select a cell to attack..." : "");
 		}
 	}
 
-	public void allowAttack(boolean allow) {
-		sendAttackGuessButton.setVisible(allow);
-		attackLabel.setText(allow ? "Select a cell to attack..." : "");
-	}
-
-	public void updateAttackLabel(String text, int millis) {
+	public synchronized void updateAttackLabel(String text, int millis) {
 		new Thread(() -> {
-			attackLabel.setText(text);
-			try {
-				Thread.sleep(millis);
+			synchronized (attackLabel) {
+				attackLabel.setText(text);
+				try {
+					Thread.sleep(millis);
+				}
+				catch (InterruptedException e) {}
+				attackLabel.setText("");
 			}
-			catch (InterruptedException e) {}
-			attackLabel.setText("");
 		}, "AttackLabelUpdate").start();
 	}
 }

@@ -20,7 +20,6 @@ public abstract class Map<T extends Cell> {
 	// The height and the width need to have an extra column or row for the letters and numbers.
 	public static final int HEIGHT = 11;
 	public static final int WIDTH = 11;
-
 	private static final int GRID_GAP = Integer.parseInt(gameSettings.getSetting("grid_gap"));
 
 	private final HashMap<ShipLocation, T> cellList = new HashMap<>();
@@ -46,7 +45,7 @@ public abstract class Map<T extends Cell> {
 		return cellList;
 	}
 
-	/** The map doesn't know if the location is going to be a hit in {@link EnemyMap} */
+	/** We need the result because the map doesn't know if the location is going to be a hit. */
 	public void attackCell(ShipLocation location, Result result) {
 		//// System.out.println("Attacked: " + location);
 		T cell = getCell(location);

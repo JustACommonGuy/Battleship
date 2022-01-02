@@ -1,10 +1,10 @@
-package justacommonguy.battleshipgui.cell;
+package justacommonguy.battleshipgui.cell.Enemy;
 
 import java.util.ArrayList;
 
 import justacommonguy.battleshipgui.ship.ShipLocation;
 
-public class Attacker {
+class Attacker {
 
 	private ArrayList<AttackListener> listenerList = new ArrayList<>();
 

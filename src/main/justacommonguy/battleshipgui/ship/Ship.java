@@ -25,7 +25,6 @@ public class Ship implements Serializable, Cloneable {
 	private ArrayList<ShipLocation> locations = new ArrayList<>();
 	private final int size;
 
-
 	private Ship(ArrayList<ShipLocation> locations) {
 		if ((locations.size() < SHIP_SIZES[0]) || 
 				(locations.size() > SHIP_SIZES[SHIP_SIZES.length - 1])) {

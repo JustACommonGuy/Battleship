@@ -10,10 +10,15 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
+import justacommonguy.battleshipgui.network.NetworkComponent;
+import justacommonguy.battleshipgui.network.Request;
 import justacommonguy.battleshipgui.player.Player;
 import justacommonguy.battleshipgui.ship.Ship;
 import justacommonguy.battleshipgui.ship.ShipLocation;
+import justacommonguy.battleshipgui.utils.Attack;
 import justacommonguy.battleshipgui.utils.Result;
 
 // TODO. Should send a message to the client if the game fails.
@@ -62,6 +67,7 @@ public class GameServer implements Runnable, NetworkComponent {
 
 	private void runGame() {
 		start();
+		requestPlayers();
 		startGame();
 		unlockPlacing();
 		String winner = play();
@@ -79,60 +85,87 @@ public class GameServer implements Runnable, NetworkComponent {
 		return null;
 	}
 
-	private void startGame() {
+	private void requestPlayers() {
 		try {
 			oos.writeObject(Request.SEND_PLAYER);
 			oos.writeObject(null);
 			System.out.println("Requested client to send player info.");
 			client = (Player) ois.readObject();
 			System.out.println("Received client's player info. Player: " + client);
-			local.respondRequest(Request.START, client.toString());
+	
+			host = (Player) local.respondRequest(Request.SEND_PLAYER, null);
+		} catch (ClassNotFoundException | IOException e) {
+			System.out.println("Failed to request or receive player info.");
+		}
+	}
 
+	private void startGame() {
+		try {			
+			local.respondRequest(Request.START, client.toString());
+			
 			oos.writeObject(Request.START);
 			System.out.println("Requested client to start game.");
-			host = (Player) local.respondRequest(Request.SEND_PLAYER, null);
 			oos.writeObject(host.toString());
 			System.out.println("Sent host info to client. Player: " + host);
 		}
-		catch (IOException | ClassNotFoundException e) {
+		catch (IOException e) {
 			System.out.println("Failed to start the game.");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void unlockPlacing() {
+		CyclicBarrier barrier = new CyclicBarrier(2);
+
+		new Thread(() -> {
+			try {
+				oos.writeObject(Request.PLACE_SHIPS);
+				oos.writeObject(null);
+				clientShips = (ArrayList<Ship>) ois.readObject();
+				barrier.await();
+			}
+			catch (BrokenBarrierException | ClassNotFoundException | InterruptedException | IOException e) {
+				System.out.println("Failed to get client ships.");
+			}
+		}).start();
+
+		hostShips = (ArrayList<Ship>) local.respondRequest(Request.PLACE_SHIPS, null);
+		try {
+			barrier.await();
+		}
+		catch (BrokenBarrierException |InterruptedException e) {}
 	}
 
 	private String play() {
 		Random random = new Random();
 		String winner = host.toString();
 
-		// Host goes first if true.
+		boolean isHostFirst = false;
 		if (random.nextBoolean()) {
-			while (!hostShips.isEmpty() || !clientShips.isEmpty()) {
-				hostAttack();
-				clientAttack();
-			}
+			isHostFirst = true;
 		}
-		else {
-			while (!hostShips.isEmpty() || !clientShips.isEmpty()) {
-				clientAttack();
+
+		while (true) {
+			if (isHostFirst) {
 				hostAttack();
+				isHostFirst = false;
 			}
+
+			if (isGameFinished()) {
+				break;
+			}
+			clientAttack();
+
+			if (isGameFinished()) {
+				break;
+			}
+			hostAttack();
 		}
 
 		if (hostShips.isEmpty()) {
 			winner = client.toString();
 		}
 		return winner;
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void unlockPlacing() {
-		hostShips = (ArrayList<Ship>) local.respondRequest(Request.PLACE_SHIPS, null);
-		try {
-			oos.writeObject(Request.PLACE_SHIPS);
-			oos.writeObject(null);
-			clientShips = (ArrayList<Ship>) ois.readObject();
-		} catch (ClassNotFoundException | IOException e) {
-			System.out.println("Failed to get client ships.");
-		}
 	}
 
 	private void hostAttack() {
@@ -155,7 +188,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	}
 
 	//TODO This should only check, not update the list
-	private static Result checkGuess(ShipLocation guess, ArrayList<Ship> shipList) {
+	static Result checkGuess(ShipLocation guess, ArrayList<Ship> shipList) {
 		Result result = Result.MISS;
 		Iterator<Ship> iterator = shipList.iterator();
 
@@ -197,7 +230,11 @@ public class GameServer implements Runnable, NetworkComponent {
 		}
 	}
 
-	public void finish(String winner) {
+	public boolean isGameFinished() {
+		return hostShips.isEmpty() || clientShips.isEmpty();
+	}
+
+	private void finish(String winner) {
 		local.respondRequest(Request.FINISH, winner);
 		try {
 			oos.writeObject(Request.FINISH);
