@@ -10,7 +10,6 @@ public class EnemyMap extends Map<EnemyCell> implements AttackListener {
 
 	private Attacker attacker = new Attacker();
 	private ShipLocation attackGuess;
-	// TODO Use a CyclicBarrier to reset latch
 	private CountDownLatch latch;
 
 	public EnemyMap() {

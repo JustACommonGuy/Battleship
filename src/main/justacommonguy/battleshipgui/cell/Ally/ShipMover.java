@@ -39,7 +39,7 @@ class ShipMover {
 			ArrayList<AllyCell> newCells = map.getCellList(newLocations);
 			if (newCells != null) {
 				for (AllyCell newCell : newCells) {
-					newCell.highlightDragging();
+					newCell.highlightDragging(oldShip);
 				}
 			}
 		}

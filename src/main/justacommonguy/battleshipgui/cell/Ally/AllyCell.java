@@ -63,13 +63,13 @@ class AllyCell extends Cell implements MouseWheelListener {
 	}
 
 	/** Temporary highlighting when the ship is being dragged. */
-	void highlightDragging() {
+	void highlightDragging(Ship shipDragged) {
 		Color color = SHIP_COLOR;
 		int increment = fixIncrement(-50, color);
 		color = new Color(color.getRed() + increment, color.getGreen() + increment, 
 				color.getBlue() + increment);
 
-		if (hasShip() && !hasShip(ship)) {
+		if (hasShip() && !hasShip(shipDragged)) {
 			setBackground(KILL_COLOR);
 		}
 		else {

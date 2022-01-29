@@ -222,7 +222,7 @@ public class BattleshipGUI implements GUI {
 		}
 	}
 
-	public synchronized void updateAttackLabel(String text, int millis) {
+	public void updateAttackLabel(String text, int millis) {
 		new Thread(() -> {
 			synchronized (attackLabel) {
 				attackLabel.setText(text);

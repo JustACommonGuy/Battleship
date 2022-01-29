@@ -9,9 +9,9 @@ public enum Request {
 	PLACE_SHIPS,
 	/** Expects {@link justacommonguy.battleshipgui.ship.ShipLocation ShipLocation} */
 	ATTACK,
-	/** Sends {@link Attack Attack} to signal an attack to the player's map. */
+	/** Sends {@link justacommonguy.battleshipgui.utils.Attack Attack} to signal an attack to the player's map. */
 	ATTACK_ALLY,	//Send Attack
-	/** Sends {@link Attack Attack} to signal an attack to the enemy's map. */
+	/** Sends {@link justacommonguy.battleshipgui.utils.Attack Attack} to signal an attack to the enemy's map. */
 	ATTACK_ENEMY,
 	/** Sends the winner in a String. */
 	FINISH

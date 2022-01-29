@@ -112,18 +112,17 @@ public class Ship implements Serializable, Cloneable {
 		int xChange = newLoc.getX() - oldLoc.getX();
 		int yChange = newLoc.getY() - oldLoc.getY();
 		ArrayList<ShipLocation> newLocations = new ArrayList<>();
-
 		//// System.out.println("");
-		for (ShipLocation loc : locations) {
-			ShipLocation updatedLocation = null;
-			try {
+		try {
+			for (ShipLocation loc : locations) {
+				ShipLocation updatedLocation = null;
 				updatedLocation = new ShipLocation(loc.getX() + xChange, loc.getY() + yChange);
 				newLocations.add(updatedLocation);
 			}
-			catch (IllegalArgumentException e) {
-				//// System.out.println("Could not generate new locations. Negative coords.");
-				return null;
-			}
+		}
+		catch (IllegalArgumentException e) {
+			//// System.out.println("Could not generate new locations. Negative coords.");
+			return null;
 		}
 		
 		return newLocations;
@@ -134,9 +133,9 @@ public class Ship implements Serializable, Cloneable {
 			throw new IllegalArgumentException("OldLoc does not match with Ship's old location.");
 		}
 		
+		ArrayList<ShipLocation> newLocations = new ArrayList<>();
 		//// System.out.println("");
 		try {
-			ArrayList<ShipLocation> newLocations = new ArrayList<>();
 			for (ShipLocation loc : locations) {
 				int xChange = loc.getX() - center.getX();
 				int yChange = loc.getY() - center.getY();
@@ -146,11 +145,12 @@ public class Ship implements Serializable, Cloneable {
 				newLocations.add(newLocation);
 				//// System.out.println("New Location: " + newLocation);
 			}
-			return newLocations;
 		}
-		catch (IllegalArgumentException | NullPointerException e) {
+		catch (IllegalArgumentException e) {
 			return null;
 		}
+		
+		return newLocations;
 	}
 
 	public Result checkHit(ShipLocation attackedLocation) {
