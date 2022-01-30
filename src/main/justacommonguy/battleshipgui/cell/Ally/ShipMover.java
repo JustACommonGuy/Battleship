@@ -57,9 +57,8 @@ class ShipMover {
 	}
 
 	/** Rotates the ship around the center. Direction must have an absolute value of 1. */
-	public void rotate(int direction, ShipLocation center) {
-		setNewLocation(center);
-		ArrayList<ShipLocation> newLocations = oldShip.getRotatedLocations(direction, center);
+	public void rotate(int direction) {
+		ArrayList<ShipLocation> newLocations = oldShip.getRotatedLocations(direction, newLocation);
 		moveShip(newLocations);
 	}
 

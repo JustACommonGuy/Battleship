@@ -57,7 +57,7 @@ class AllyCell extends Cell implements MouseWheelListener {
 		if (placementAllowed && (ship != null)) {
 			mover = new ShipMover(this);
 			int direction = e.getWheelRotation() / Math.abs(e.getWheelRotation());
-			mover.rotate(direction, location);
+			mover.rotate(direction);
 			mover = null;
 		}
 	}
