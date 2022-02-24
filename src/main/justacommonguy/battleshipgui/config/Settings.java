@@ -17,9 +17,10 @@ public class Settings {
 	private static final String SERVER_PORT = "1337";
 	private static final String IP_ADDRESS = "";
 	private static final String CONNECTION_PORT = "";
-	/** Unsupported setting. It really just follows the ASCII sequence. */
+	/** Unsupported setting. It just follows the ASCII sequence. */
 	private static final String COLUMN_NUMBERS = "false";
 	private static final String GRID_GAP = "0";
+	/** Legacy feature. */
 	private static final String MISS = "0,0,0";
 	private static final String SHIP = "173,173,173";
 	private static final String HIT = "200,100,30";

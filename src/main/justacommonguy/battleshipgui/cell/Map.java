@@ -50,7 +50,6 @@ public abstract class Map<T extends Cell> {
 		//// System.out.println("Attacked: " + location);
 		T cell = getCell(location);
 
-		// TODO. Instead of using colors for miss, paint crosses over the panel.
 		switch (result) {
 			case HIT:
 				cell.setCellColor(cell.getHitColor());
@@ -59,7 +58,7 @@ public abstract class Map<T extends Cell> {
 				cell.setCellColor(cell.getKillColor());
 				break;
 			case MISS:
-				cell.setCellColor(cell.getMissColor());
+				cell.setMiss();
 				break;
 		}
 	}

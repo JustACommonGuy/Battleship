@@ -1,6 +1,8 @@
 package justacommonguy.battleshipgui.cell;
 
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -31,6 +33,22 @@ public abstract class Cell extends JPanel implements MouseListener, HighlightLis
 		}
 		oldColor = color;
 		setBackground(color);
+	}
+
+	public void setMiss() {
+		oldColor = null;
+		repaint();
+	}
+
+	@Override
+	protected void paintComponent(Graphics graphics) {
+		super.paintComponent(graphics);
+		if (oldColor == null) {
+			Graphics2D g = (Graphics2D) graphics;
+			int x = (getWidth()/2) - 2;
+			int y = (getHeight()/2) - 2;
+			g.fillOval(x, y, 3, 3);
+		}
 	}
 
 	@Override
