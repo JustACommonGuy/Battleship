@@ -171,7 +171,7 @@ public class GameServer implements Runnable, NetworkComponent {
 	private void hostAttack() {
 		ShipLocation guess = (ShipLocation) local.respondRequest(Request.ATTACK, null);
 		Result result = checkGuess(guess, clientShips);
-		updateLocations(new Attack(guess, result), false);
+		updateLocations(new Attack(guess, result, false));
 	}
 
 	private void clientAttack() {
@@ -180,7 +180,7 @@ public class GameServer implements Runnable, NetworkComponent {
 			oos.writeObject(null);
 			ShipLocation guess = (ShipLocation) ois.readObject();
 			Result result = checkGuess(guess, hostShips);
-			updateLocations(new Attack(guess, result), true);
+			updateLocations(new Attack(guess, result, true));
 		}
 		catch (ClassNotFoundException | IOException e) {
 			System.out.println("Failed to get client guess.");
@@ -211,19 +211,11 @@ public class GameServer implements Runnable, NetworkComponent {
 	/**
 	 * Prompts the clients to update their maps.
 	 * @param attack
-	 * @param isHostAttacked Whether the player attacked is the host.
 	 */
-	private void updateLocations(Attack attack, boolean isHostAttacked) {
-		Request hostRequest = Request.ATTACK_ENEMY;
-		Request clientRequest = Request.ATTACK_ALLY;
-		if (isHostAttacked) {
-			hostRequest = Request.ATTACK_ALLY;
-			clientRequest = Request.ATTACK_ENEMY;
-		}
-
-		local.respondRequest(hostRequest, attack);
+	private void updateLocations(Attack attack) {
+		local.respondRequest(Request.ATTACKED, attack);
 		try {
-			oos.writeObject(clientRequest);
+			oos.writeObject(Request.ATTACKED);
 			oos.writeObject(attack);
 		} catch (IOException e) {
 			System.out.println("Failed to send attack result.");

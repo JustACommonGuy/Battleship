@@ -11,6 +11,7 @@ import java.net.Socket;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
+import justacommonguy.battleshipgui.cell.Map;
 import justacommonguy.battleshipgui.cell.Ally.AllyMap;
 import justacommonguy.battleshipgui.cell.Enemy.EnemyMap;
 import justacommonguy.battleshipgui.network.NetworkComponent;
@@ -19,9 +20,6 @@ import justacommonguy.battleshipgui.player.Player;
 import justacommonguy.battleshipgui.ship.ShipLocation;
 import justacommonguy.battleshipgui.utils.Attack;
 
-/** Introducing... the disgusting god object class that runs the game. 
- * Just reading the outline makes me want to throw up, but I can't think of a proper design.
-*/
 public class GameClient implements NetworkComponent {
 
 	private BattleshipGUI gui = new BattleshipGUI(this);
@@ -130,17 +128,15 @@ public class GameClient implements NetworkComponent {
 				ShipLocation attackLocation = enemyMap.sendAttackGuess();
 				System.out.println("Sending guess: " + attackLocation);
 				return attackLocation;
-			case ATTACK_ALLY:
-				Attack enemyAttack = (Attack) message;
-				enemyAttack.updateMap(allyMap);
-				gui.updateAttackLabel(enemyAttack.getResult().toString(), 3000);
-				System.out.println("Updated " + allyMap + ": " + enemyAttack);
-				break;
-			case ATTACK_ENEMY:
-				Attack allyAttack = (Attack) message;
-				allyAttack.updateMap(enemyMap);
-				gui.updateAttackLabel(allyAttack.getResult().toString(), 3000);
-				System.out.println("Updated" + enemyMap + ": " + allyAttack);
+			case ATTACKED:
+				Map attackedMap = enemyMap;
+				Attack attack = (Attack) message;
+				if (attack.isHostAttacked()) {
+					attackedMap = allyMap;
+				}
+				attack.updateMap(attackedMap);
+				gui.updateAttackLabel(attack.getResult().toString(), 3000);
+				System.out.println("Updated " + attackedMap + ": " + attack);
 				break;
 			case FINISH:
 				finish((String) message);

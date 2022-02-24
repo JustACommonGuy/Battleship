@@ -9,10 +9,12 @@ public class Attack implements Serializable {
 	
 	private final ShipLocation guess;
 	private final Result result;
+	private final boolean isHostAttacked;
 
-	public Attack(ShipLocation guess, Result result) {
+	public Attack(ShipLocation guess, Result result, boolean isHostAttacked) {
 		this.guess = guess;
 		this.result = result;
+		this.isHostAttacked = isHostAttacked;
 	}
 
 	public void updateMap(Map map) {
@@ -23,8 +25,16 @@ public class Attack implements Serializable {
 		return result;
 	}
 
+	public boolean isHostAttacked() {
+		return isHostAttacked;
+	}
+
 	@Override
 	public String toString() {
-		return "Attack [" + guess + ", " + result + "]";
+		String attacked = "Client";
+		if (isHostAttacked) {
+			attacked = "Host";
+		}
+		return "Attack [" + guess + ", on " + attacked + ". " + result + "]";
 	}
 }
