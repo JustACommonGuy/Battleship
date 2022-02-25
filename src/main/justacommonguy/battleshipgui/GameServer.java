@@ -235,4 +235,8 @@ public class GameServer implements Runnable, NetworkComponent {
 			System.out.println("Failed to finish client's game.");
 		}
 	}
+
+	void restart() {
+		local.restart();
+	}
 }

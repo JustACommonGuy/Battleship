@@ -22,7 +22,7 @@ import justacommonguy.battleshipgui.utils.Attack;
 
 public class GameClient implements NetworkComponent {
 
-	private BattleshipGUI gui = new BattleshipGUI(this);
+	private BattleshipGUI gui;
 	private GameServer server;
 	
 	private Player player;
@@ -31,8 +31,8 @@ public class GameClient implements NetworkComponent {
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 
-	private AllyMap allyMap = new AllyMap();
-	private EnemyMap enemyMap = new EnemyMap();
+	private AllyMap allyMap;
+	private EnemyMap enemyMap;
 
 	public static void main(String[] args) {
 		try {
@@ -64,6 +64,10 @@ public class GameClient implements NetworkComponent {
 	}
 
 	public void start() {
+		gui = new BattleshipGUI(this);
+		allyMap = new AllyMap();
+		enemyMap = new EnemyMap();
+		
 		gui.start(JFrame.EXIT_ON_CLOSE);
 		gui.initPlayArea(allyMap, enemyMap);
 		allyMap.buildShips();
@@ -100,6 +104,9 @@ public class GameClient implements NetworkComponent {
 				Object answer = respondRequest((Request) obj, ois.readObject());
 				if (answer != null) {
 					oos.writeObject(answer);
+				}
+				if (obj == Request.FINISH) {
+					break;
 				}
 			}
 		}
@@ -158,5 +165,11 @@ public class GameClient implements NetworkComponent {
 	private void finish(String winner) {
 		//TODO
 		System.out.println("Finished the game. Winner is " + winner);
+	}
+
+	void restart() {
+		new Thread(() -> {
+			main(new String[0]);
+		}, "Main");
 	}
 }

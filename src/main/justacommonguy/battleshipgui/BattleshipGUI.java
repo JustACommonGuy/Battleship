@@ -36,7 +36,6 @@ public class BattleshipGUI implements GUI {
 
 	private GameClient client;
 
-	public static BattleshipGUI gameGUI;
 	public static final double Y_RESOLUTION = 
 			Toolkit.getDefaultToolkit().getScreenSize().getHeight();
 	public static final double X_RESOLUTION =
@@ -61,6 +60,7 @@ public class BattleshipGUI implements GUI {
 	private JPanel buttonPanel;
 	private JButton hostButton;
 	private JButton joinButton;
+	private JButton restartButton;
 
 	public BattleshipGUI(GameClient client) {
 		this.client = client;
@@ -87,7 +87,7 @@ public class BattleshipGUI implements GUI {
 		return name;
 	}
 
-	// ? Divide the method into several smaller GUI methods.
+	// TODO Divide the method into several smaller GUI methods.
 	@Override
 	public void start(int closeOperation) {
 		//? Maybe disable close button so the player will quit appropiately.
@@ -97,9 +97,23 @@ public class BattleshipGUI implements GUI {
 		GUI might blow up in displays that do not have 16:9 resolutions. */
 		SwingUtils.setUpJFrame(frame, (int) ((0.75) * X_RESOLUTION), (int) ((0.75) * Y_RESOLUTION));
 
+		JPanel eastPanel = initEastArea();
+		JPanel westPanel = initWestPanel();
+
+		frame.add(westPanel, BorderLayout.WEST);
+		frame.add(eastPanel, BorderLayout.EAST);
+		/* For reasons that humanity will never know, 
+		the dumb frame needs to be brought to the front when a popup appears. */
+		SwingUtils.frameToFront(frame);
+	}
+
+	private JPanel initEastArea() {
 		JPanel eastPanel = new JPanel();
 		eastPanel.add(playArea);
+		return eastPanel;
+	}
 
+	private JPanel initWestPanel() {
 		JPanel westPanel = new JPanel();
 		westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.Y_AXIS));
 		buttonPanel = new JPanel();
@@ -110,20 +124,18 @@ public class BattleshipGUI implements GUI {
 		hostButton.addActionListener(new HostGameListener());
 		joinButton = new JButton("Join game");
 		joinButton.addActionListener(new JoinGameListener());
+		restartButton = new JButton("Restart game");
+		restartButton.addActionListener(new RestartGameListener());
 
 		buttonPanel.add(hostButton);
 		//// buttonPanel.add(Box.createVerticalGlue());
 		buttonPanel.add(joinButton);
 		westPanel.add(buttonPanel);
 		westPanel.add(chatPanel);
-
-		frame.add(westPanel, BorderLayout.WEST);
-		frame.add(eastPanel, BorderLayout.EAST);
-		/* For reasons that humanity will never know, 
-		the dumb frame needs to be brought to the front when a popup appears. */
-		SwingUtils.frameToFront(frame);
+		return westPanel;
 	}
 
+	// TODO. Add a randomize button
 	public void initPlayArea(AllyMap allyMap, EnemyMap enemyMap) {
 		GridBagConstraints gbc = new GridBagConstraints();
 		Insets insets = new Insets(3, 3, 3, 3);
@@ -200,6 +212,14 @@ public class BattleshipGUI implements GUI {
 		}
 	}
 
+	private class RestartGameListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			restart();			
+		}
+	}
+
 	public void startGame(String enemyName) {
 		enemyGridLabel.setText(enemyName + "'S GRID");
 	}
@@ -233,5 +253,10 @@ public class BattleshipGUI implements GUI {
 				attackLabel.setText("");
 			}
 		}, "AttackLabelUpdate").start();
+	}
+
+	void restart() {
+		frame.dispose();
+		client.restart();
 	}
 }
